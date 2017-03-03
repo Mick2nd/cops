@@ -242,7 +242,7 @@ class JSONRenderer
         $out["abouturl"] = "index.php" . addURLParameter ("?page=" . Base::PAGE_ABOUT, DB, $database);
 
         if ($page == Base::PAGE_ABOUT) {
-            $temp = preg_replace ("/\<h1\>About COPS\<\/h1\>/", "<h1>About COPS " . VERSION . "</h1>", file_get_contents('about.html'));
+        	$temp = preg_replace ("/\<h1\>About COPS\<\/h1\>/", "<h1>About COPS " . VERSION . "</h1>", file_get_contents('about.html'));
             $out ["fullhtml"] = $temp;
         }
 
