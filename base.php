@@ -348,7 +348,7 @@ class Link
     const OPDS_ACQUISITION_TYPE = "http://opds-spec.org/acquisition";
     const OPDS_NAVIGATION_TYPE = "application/atom+xml;profile=opds-catalog;kind=navigation";
     const OPDS_PAGING_TYPE = "application/atom+xml;profile=opds-catalog;kind=acquisition";
-
+    
     public $href;
     public $type;
     public $rel;
@@ -1354,6 +1354,11 @@ abstract class Base
         }
 
         $result = self::getDb ($database)->prepare(str_format ($query, $columns, $filter));
+        if ($result === false)
+        {
+            return array(0, false);
+        }
+        
         $result->execute ($params);
         return array ($totalResult, $result);
     }

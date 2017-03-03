@@ -7,6 +7,7 @@
  */
 
 require_once('base.php');
+require_once('book.php');
 
 /**
  * A CustomColumn with an value
@@ -456,7 +457,7 @@ class CustomColumnTypeText extends CustomColumnType
 
     public function getQuery($id)
     {
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
         return array($query, array($id));
     }
 
@@ -554,7 +555,7 @@ class CustomColumnTypeSeries extends CustomColumnType
 
     public function getQuery($id)
     {
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
         return array($query, array($id));
     }
 
@@ -649,7 +650,7 @@ class CustomColumnTypeEnumeration extends CustomColumnType
 
     public function getQuery($id)
     {
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
         return array($query, array($id));
     }
 
@@ -724,7 +725,7 @@ class CustomColumnTypeDate extends CustomColumnType
     public function getQuery($id)
     {
         $date = new DateTime($id);
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_DATE, "{0}", "{1}", $this->getTableName());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_DATE, "{0}", "{1}", $this->getTableName());
         return array($query, array($date->format("Y-m-d")));
     }
 
@@ -825,10 +826,10 @@ class CustomColumnTypeRating extends CustomColumnType
     public function getQuery($id)
     {
         if ($id == 0) {
-            $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_RATING_NULL, "{0}", "{1}", $this->getTableLinkName(), $this->getTableName(), $this->getTableLinkColumn());
+            $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_RATING_NULL, "{0}", "{1}", $this->getTableLinkName(), $this->getTableName(), $this->getTableLinkColumn());
             return array($query, array());
         } else {
-            $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_RATING, "{0}", "{1}", $this->getTableLinkName(), $this->getTableName(), $this->getTableLinkColumn());
+            $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_RATING, "{0}", "{1}", $this->getTableLinkName(), $this->getTableName(), $this->getTableLinkColumn());
             return array($query, array($id));
         }
     }
@@ -914,13 +915,13 @@ class CustomColumnTypeBool extends CustomColumnType
     public function getQuery($id)
     {
         if ($id == -1) {
-            $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_BOOL_NULL, "{0}", "{1}", $this->getTableName());
+            $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_BOOL_NULL, "{0}", "{1}", $this->getTableName());
             return array($query, array());
         } else if ($id == 0) {
-            $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_BOOL_FALSE, "{0}", "{1}", $this->getTableName());
+            $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_BOOL_FALSE, "{0}", "{1}", $this->getTableName());
             return array($query, array());
         } else if ($id == 1) {
-            $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_BOOL_TRUE, "{0}", "{1}", $this->getTableName());
+            $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_BOOL_TRUE, "{0}", "{1}", $this->getTableName());
             return array($query, array());
         } else {
             return NULL;
@@ -993,7 +994,7 @@ class CustomColumnTypeInteger extends CustomColumnType
 
     public function getQuery($id)
     {
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_DIRECT, "{0}", "{1}", $this->getTableName());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_DIRECT, "{0}", "{1}", $this->getTableName());
         return array($query, array($id));
     }
 
@@ -1064,7 +1065,7 @@ class CustomColumnTypeFloat extends CustomColumnType
 
     public function getQuery($id)
     {
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_DIRECT, "{0}", "{1}", $this->getTableName());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_DIRECT, "{0}", "{1}", $this->getTableName());
         return array($query, array($id));
     }
 
@@ -1135,7 +1136,7 @@ class CustomColumnTypeComment extends CustomColumnType
 
     public function getQuery($id)
     {
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_DIRECT_ID, "{0}", "{1}", $this->getTableName());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_DIRECT_ID, "{0}", "{1}", $this->getTableName());
         return array($query, array($id));
     }
 

@@ -326,3 +326,11 @@
      * When empty it will auto detect the language.
      */
     $config['cops_language'] = '';
+
+    /*
+     * Use Virtual Libraries setting (preferred) instead of Tag Filter 
+     * "0" -> do not used
+     * "1" -> use instead of "cops_books_filter"
+     */
+	$config['cops_use_virtual_libraries'] = "0";
+	

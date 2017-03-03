@@ -1,17 +1,22 @@
 <?php
+
 /**
  * COPS (Calibre OPDS PHP Server) class file
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author     Sébastien Lucas <sebastien@slucas.fr>
+ * @author     Sï¿½bastien Lucas <sebastien@slucas.fr>
  */
 
 require_once ("base.php");
+require_once ("virtualLibraries/virtualLibraries.php");
+
+use VirtualLibraries\VirtualLibraries;
 
 class OPDSRenderer
 {
     private $xmlStream = NULL;
     private $updated = NULL;
+    private $virtualLibraries = NULL;
 
     private function getUpdatedTime () {
         if (is_null ($this->updated)) {
@@ -29,8 +34,14 @@ class OPDSRenderer
         return $this->xmlStream;
     }
 
+    public function __construct()
+    {
+    	if (is_null($this->virtualLibraries))
+    		$this->virtualLibraries = new VirtualLibraries($this);
+    }
+
     public function getOpenSearch () {
-        global $config;
+    	global $config;
         $xml = new XMLWriter ();
         $xml->openMemory ();
         $xml->setIndent (true);
@@ -105,9 +116,6 @@ class OPDSRenderer
             self::getXmlStream ()->startElement ("updated");
                 self::getXmlStream ()->text (self::getUpdatedTime ());
             self::getXmlStream ()->endElement ();
-            self::getXmlStream ()->startElement ("icon");
-                self::getXmlStream ()->text ($page->favicon);
-            self::getXmlStream ()->endElement ();
             self::getXmlStream ()->startElement ("author");
                 self::getXmlStream ()->startElement ("name");
                     self::getXmlStream ()->text ($page->authorName);
@@ -118,6 +126,9 @@ class OPDSRenderer
                 self::getXmlStream ()->startElement ("email");
                     self::getXmlStream ()->text ($page->authorEmail);
                 self::getXmlStream ()->endElement ();
+            self::getXmlStream ()->endElement ();
+            self::getXmlStream ()->startElement ("icon");
+                self::getXmlStream ()->text ($page->favicon);
             self::getXmlStream ()->endElement ();
             $link = new LinkNavigation ("", "start", "Home");
             self::renderLink ($link);
@@ -139,9 +150,15 @@ class OPDSRenderer
                 $link = new Link ($config['cops_full_url'] . 'feed.php' . $urlparam, "application/atom+xml", "search", "Search here");
             }
             self::renderLink ($link);
-            if ($page->containsBook () && !is_null ($config['cops_books_filter']) && count ($config['cops_books_filter']) > 0) {
+            $done = $this->virtualLibraries->renderLinks(); 
+            if (/* $page->containsBook () && */ 
+            	! $done &&
+            	!is_null ($config['cops_books_filter']) && 
+            	count ($config['cops_books_filter']) > 0) 
+            {
                 $Urlfilter = getURLParam ("tag", "");
-                foreach ($config['cops_books_filter'] as $lib => $filter) {
+                foreach ($config['cops_books_filter'] as $lib => $filter) 
+                {
                     $link = new LinkFacet ("?" . addURLParameter (getQueryString (), "tag", $filter), $lib, localize ("tagword.title"), $filter == $Urlfilter);
                     self::renderLink ($link);
                 }
@@ -154,8 +171,10 @@ class OPDSRenderer
         return self::getXmlStream ()->outputMemory(true);
     }
 
-    private function renderLink ($link) {
+    public function renderLink ($link) {
         self::getXmlStream ()->startElement ("link");
+        if (!is_null($link))
+        {
             self::getXmlStream ()->writeAttribute ("href", $link->href);
             self::getXmlStream ()->writeAttribute ("type", $link->type);
             if (!is_null ($link->rel)) {
@@ -169,7 +188,8 @@ class OPDSRenderer
             }
             if ($link->activeFacet) {
                 self::getXmlStream ()->writeAttribute ("opds:activeFacet", "true");
-            }
+            }                	
+        }
         self::getXmlStream ()->endElement ();
     }
 
@@ -245,7 +265,7 @@ class OPDSRenderer
     }
 
     public function render ($page) {
-        global $config;
+    	global $config;
         self::startXmlDocument ($page);
         if ($page->isPaginated ())
         {

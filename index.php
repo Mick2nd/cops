@@ -18,7 +18,7 @@
     require_once ("customcolumn.php");
     require_once ("book.php");
     require_once ("resources/doT-php/doT.php");
-
+    
     // If we detect that an OPDS reader try to connect try to redirect to feed.php
     if (preg_match("/(MantanoReader|FBReader|Stanza|Marvin|Aldiko|Moon\+ Reader|Chunky|AlReader|org\.ebookdroid)/", $_SERVER['HTTP_USER_AGENT'])) {
         header("location: feed.php");
@@ -61,13 +61,13 @@
     $template = new doT ();
     $dot = $template->template ($headcontent, NULL);
     echo ($dot ($data));
+    
 ?><body>
 <?php
 if (useServerSideRendering ()) {
     // Get the data
     require_once ("JSON_renderer.php");
     $data = JSONRenderer::getJson (true);
-
     echo serverSideRender ($data);
 }
 ?>
