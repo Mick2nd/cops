@@ -2,7 +2,8 @@
 
 namespace VirtualLibraries
 {
-    require_once 'sqlUtilities.php';
+	require_once 'utilities.php';
+	require_once 'sqlUtilities.php';
     use PDO ;
     use ErrorException ;
     

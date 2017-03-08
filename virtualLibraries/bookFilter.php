@@ -20,7 +20,7 @@ namespace VirtualLibraries
          */
         public function __construct()
         {
-            \Logger::configure('config.xml');
+            \Logger::configure(dirname(__DIR__) . 'config.xml');
             $this->log = \Logger::getLogger(__CLASS__);
             $this->log->debug("Test log with log4php");            
         }

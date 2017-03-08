@@ -3,7 +3,7 @@
         
     <appender name="myFileAppender" class="LoggerAppenderFile">
         <layout class="LoggerLayoutPattern">
-            <param name="conversionPattern" value="%date [%logger] [%level] - %message%newline" />
+            <param name="conversionPattern" value="%date{ISO8601} [%logger][%level] - %message%newline%ex" />
         </layout>
         <param name="file" value="copsLog.txt" />
     </appender>
