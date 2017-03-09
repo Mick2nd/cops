@@ -46,7 +46,7 @@ class CustomColumnTypeText extends CustomColumnType
 
     public function getQuery($id)
     {
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM, "{0}", "{1}", $this->getTableLinkName(), $this->getTableLinkColumn());
         return array($query, array($id));
     }
 

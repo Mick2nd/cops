@@ -26,7 +26,7 @@ class CustomColumnTypeDate extends CustomColumnType
     public function getQuery($id)
     {
         $date = new DateTime($id);
-        $query = str_format(Book::SQL_BOOKS_BY_CUSTOM_DATE, "{0}", "{1}", $this->getTableName());
+        $query = str_format(BookServices::SQL_BOOKS_BY_CUSTOM_DATE, "{0}", "{1}", $this->getTableName());
         return array($query, array($date->format("Y-m-d")));
     }
 
