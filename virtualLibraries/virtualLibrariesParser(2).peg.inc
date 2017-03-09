@@ -51,16 +51,19 @@ class VirtualLibraryParser extends Parser\Basic
 # Instead of using free names for columns in tables we use predefined ones
 # We assign them properties like field name, table name and format for later use
 
-TextColumn: 'title' | 'sort' | 'author_sort' | 'isbn' | 'lccn' | 'path' | 'uuid' |
+TextColumn: all: ( books: ('title' | 'sort' | 'author_sort' | 'isbn' | 'lccn' | 'path' | 'uuid') |
 	authors: ('authors' | 'author') | languages: 'languages' | publishers: ('publishers' | 'publisher') | 
 	ratings: 'ratings' | series: 'series' | series_sort: 'series_sort' | tags: 'tags' |
-	comments: 'comments'
-	function * (&$res, $sub)
+	comments: 'comments' )
+	function all(&$res, $sub)
 	{
 		$res['name'] = $sub['text'];
-		$res['field'] = $sub['text'];
 		$res['format'] = 'TEXT';
+	}
+	function books(&$res, $sub)
+	{
 		$res['table'] = 'books';
+		$res['field'] = $sub['text'];
 	}
 	function authors(&$res, $sub)
 	{

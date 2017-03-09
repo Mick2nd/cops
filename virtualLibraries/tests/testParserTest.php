@@ -49,6 +49,10 @@ namespace VirtualLibraries
             {
                 print "No Match\n" ;
             }
+            
+            $parser= new testParser($parse_string);
+            $res = $parser->match_Expr3() ;
+            
         }
 
     }
@@ -59,7 +63,8 @@ namespace VirtualLibraries
      * Results of this test:
      * 1. restart of parser possible, simply set pos = 0
      * 2. rules without function do not return other than "text" item
-     * 3. rules with a common function cannot provide "val" items from alternative rules 
+     * 3. rules with a common function cannot provide "val" items from alternative rules
+     * 4. the generic * function will not be invoked if special function is  
      */
 }
         

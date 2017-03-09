@@ -13,12 +13,26 @@ use hafriedlander\Peg\Parser;
 
 class testParser extends Parser\Basic
 {
+	private $log;
+	
+	/**
+	 * Ctor. Initializes the logger.
+	 */
+	public function __construct($expr)
+	{
+		parent::__construct($expr);
+		
+		$this->log = \Logger::getLogger(__CLASS__);
+	}
+	
     /**
      * Used to restart the Parser
      */
     public function rewind()
     {
         $this->pos = 0;
+        $this->depth = 0 ;
+        $this->regexps = array() ;
     }
 
 /*!* testParser
@@ -65,6 +79,15 @@ Expr2:  All: (Bool | Name | String)
         $res['text'] = 'FROM Bool function';
     }
 
+Expr3: All: (Bool | Name | String)
+    function All(&$res, $sub)
+    {
+    	$this->log->info("In function All");
+    }
+    function Bool(&$res, $sub)
+    {
+    	$this->log->info("In function Bool");
+    }
 */    
     
 }
