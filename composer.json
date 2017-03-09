@@ -21,7 +21,9 @@
         "seblucas/tbszip": "~2.16",
         "simonpioli/sortelements": "dev-master",
         "bower-asset/doT": "~1.0.1",
-        "rsms/js-lru": "dev-v2"
+        "rsms/js-lru": "dev-v2",
+        "apache/log4php": "2.3.*",
+        "hafriedlander/php-peg": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "5.4.* || 4.8.*",
