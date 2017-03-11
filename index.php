@@ -10,12 +10,33 @@
     require_once dirname(__FILE__) . '/config.php';
     require_once dirname(__FILE__) . '/base.php';
 
+    ini_set("log_errors", 1);                                           // do this before instantiating ... php logging prepared !
+    ini_set("error_reporting", E_ALL);
+    ini_set("error_log", "/share/MD0_DATA/Web/copsgit/phplog.txt");     // TODO: change for production!
+    
+    $_SESSION['apppath'] = dirname(__FILE__);
+    
+    spl_autoload_register(function ($class_name)
+    {
+    	$fn = str_replace('\\', '/', $class_name) . '.php';
+    	$path = $_SESSION['apppath'] . '/' . $fn;
+    	trigger_error("Trying to autoload class $class_name at $path", E_USER_NOTICE);
+    	 if (file_exists($path))
+    	{
+    		trigger_error("Autoloading class $class_name at $path", E_USER_NOTICE);
+    		require_once $path;
+    		return true;
+    	}
+    	return false;
+    });
+    
+    
     // If we detect that an OPDS reader try to connect try to redirect to feed.php
     if (preg_match('/(MantanoReader|FBReader|Stanza|Marvin|Aldiko|Moon\+ Reader|Chunky|AlReader|EBookDroid|BookReader|CoolReader|PageTurner|books\.ebook\.pdf\.reader|com\.hiwapps\.ebookreader|OpenBook)/', $_SERVER['HTTP_USER_AGENT'])) {
         header('location: feed.php');
         exit();
     }
-
+    
     $page     = getURLParam('page', Base::PAGE_INDEX);
     $query    = getURLParam('query');
     $qid      = getURLParam('id');

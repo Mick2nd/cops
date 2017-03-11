@@ -7,7 +7,6 @@
  */
 
 require_once dirname(__FILE__) . '/../base.php';
-require_once ("virtualLibraries/virtualLibraries.php");
 
 use VirtualLibraries\VirtualLibraries;
 

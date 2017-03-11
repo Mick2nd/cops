@@ -206,6 +206,11 @@ abstract class Base
         }
 
         $result = self::getDb ($database)->prepare(str_format ($query, $columns, $filter));
+        if ($result === false)
+        {
+            return array(0, false);
+        }
+        
         $result->execute ($params);
         return array ($totalResult, $result);
     }

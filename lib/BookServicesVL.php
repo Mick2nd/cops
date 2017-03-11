@@ -1,4 +1,5 @@
 <?php
+//namespace lib;
 /**
  * COPS (Calibre OPDS PHP Server) class file
  *
@@ -7,13 +8,8 @@
  */
 
 // Insert the path where you unpacked log4php
-require_once('log4php/Logger.php');
+//require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-require_once('virtualLibraries/virtualLibraries.php');
-require_once('virtualLibraries/bookFilter.php');
-require_once('virtualLibraries/dbProxy.php');
-
-use VirtualLibraries\VirtualLibraries;
 use VirtualLibraries\BookFilter;
 use VirtualLibraries\DbProxy;
 
@@ -180,7 +176,7 @@ class BookServicesVL extends BookServices
 				$database,
 				$numberPerPage);
 
-		$ids = $result->fetchAll(PDO::FETCH_COLUMN);
+		$ids = $result->fetchAll(\PDO::FETCH_COLUMN);
 		$result->closeCursor();
 		$totalNumber = count($ids);
 

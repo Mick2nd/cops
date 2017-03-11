@@ -290,7 +290,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     function getName(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         $res['name'] = $sub['text'];
     }
@@ -303,7 +303,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     function getCompareOp(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         switch($sub['text'])
         {
@@ -324,7 +324,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     function getCompareOpString(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         switch($sub['text'])
         {
@@ -348,7 +348,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     function getCompareResult(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         $compText = $sub['comptext'] ? $sub['comptext'] : $sub['text'];  
         $res['text'] = $res['name'] . $res['comp'] . $compText;                                 // prepare the comparison
@@ -365,7 +365,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     function getCompareResultBool(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
     
         $query = ForeignColumns::getDefault()->GetSqlExists($res['name'], $this->id);           // prepare the query
         if ($this->clientSite)
@@ -405,7 +405,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     function getResult(&$res, $sub)                                                                    // Term is either one of the comparisons or a Search
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
         
         return $sub['val'];
     }

@@ -2,11 +2,8 @@
 
 namespace VirtualLibraries
 {
-    require_once 'utilities.php';
-    require_once 'virtualLibrariesParser.php';
-    require_once 'dbProxy.php';
-    require_once dirname(__DIR__) . '/log4php/Logger.php';
-    
+    require_once 'Utilities.php';
+
     /**
      * Implements a filter for books in the Calibre (Sqlite) DB
      * @author Jürgen
@@ -20,7 +17,6 @@ namespace VirtualLibraries
          */
         public function __construct()
         {
-            \Logger::configure(dirname(__DIR__) . 'config.xml');
             $this->log = \Logger::getLogger(__CLASS__);
             $this->log->debug("Test log with log4php");            
         }
@@ -46,7 +42,7 @@ namespace VirtualLibraries
             }
             $this->vlib = $vlib;
             $searches = $this->getDbProxy()->getSetting('saved_searches');
-            $this->parser = new VirtualLibraryParser(
+            $this->parser = new VirtualLibrariesParser(
                 $this->vlib,
                 $this,
                 json_decode($searches, true, 2));                                   // instantiates a new virtual library parser
@@ -152,8 +148,8 @@ namespace VirtualLibraries
         {
             $res = $this->dbProxy->test($sql);
             
-            diagnosticPrint("Test in test: $res\n");
-            diagnosticPrint("Sql: \n$sql\n");
+            Diagnostic::diagnosticPrint("Test in test: $res\n");
+            Diagnostic::diagnosticPrint("Sql: \n$sql\n");
 
             return $res;
         }

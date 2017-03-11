@@ -30,8 +30,8 @@ bookFilterTest::test('#genre:false');                                   // a boo
 
 bookFilterTest::test('pubdate:true');                                   // a bool comparison (no pubdate defined)
 
-enableDiagnosticPrint(false);
+Diagnostic::enable(false);
 bookFilterTest::test('search:"Verstecke Calibre und Literatur"');       // a bool comparison (no pubdate defined)
-enableDiagnosticPrint(false);
+Diagnostic::enable(false);
 
 bookFilterTest::test('pubdate:=2008');
