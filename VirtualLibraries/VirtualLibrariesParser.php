@@ -2,9 +2,8 @@
 
 namespace VirtualLibraries;
 
-require_once 'sqlUtilities.php';
-require_once 'utilities.php';
-require_once dirname(__DIR__) . '/php-peg/autoloader.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/vendor/hafriedlander/php-peg/autoloader.php';
 
 use hafriedlander\Peg\Parser;
 
@@ -12,7 +11,7 @@ use hafriedlander\Peg\Parser;
  * Parser to test whether a certain book(id) belongs to a virtual library 
  * @author Jürgen
  */
-class VirtualLibraryParser extends Parser\Basic 
+class VirtualLibrariesParser extends Parser\Basic 
 {
     var $savedSearches;
     var $clientSite;
@@ -1181,7 +1180,7 @@ public function Disjunction_Operand2 (&$res, $sub)
     function getName(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         $res['name'] = $sub['text'];
     }
@@ -1194,7 +1193,7 @@ public function Disjunction_Operand2 (&$res, $sub)
     function getCompareOp(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         switch($sub['text'])
         {
@@ -1215,7 +1214,7 @@ public function Disjunction_Operand2 (&$res, $sub)
     function getCompareOpString(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         switch($sub['text'])
         {
@@ -1239,7 +1238,7 @@ public function Disjunction_Operand2 (&$res, $sub)
     function getCompareResult(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         $compText = $sub['comptext'] ? $sub['comptext'] : $sub['text'];  
         $res['text'] = $res['name'] . $res['comp'] . $compText;                                 // prepare the comparison
@@ -1256,7 +1255,7 @@ public function Disjunction_Operand2 (&$res, $sub)
     function getCompareResultBool(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
     
         $query = ForeignColumns::getDefault()->GetSqlExists($res['name'], $this->id);           // prepare the query
         if ($this->clientSite)
@@ -1296,20 +1295,11 @@ public function Disjunction_Operand2 (&$res, $sub)
     function getResult(&$res, $sub)                                                                    // Term is either one of the comparisons or a Search
     {
         $rule = $res["_matchrule"];
-        diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
         
         return $sub['val'];
     }
 }
 
-/// <summary>
-/// Use this iface to query an outside db about book
-/// </summary>
-interface IClientSite
-{
-    public function create($parseString);
-    public function isSelected($id);
-    public function test($sql);
-}
 
 // TODO: Parser komplettieren (search, callbacks zu db, bool vergleich etc.)

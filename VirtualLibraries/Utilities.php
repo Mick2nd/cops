@@ -2,54 +2,58 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(__DIR__) . '/log4php/Logger.php';
-
-\Logger::configure(dirname(__DIR__) . '/config.xml');
-$log = \Logger::getLogger("Diagnostic");
-
-$diagnosticPrintEnabled = false;
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 /**
- * Prints a string but only if enabled.
- * @param unknown $content
+ * Class to log and print dianostic info
+ * @author Jürgen
+ *
  */
-function diagnosticPrint($content)
+abstract class Diagnostic
 {
-    global $diagnosticPrintEnabled;
-    global $log;
-    
-    $log->debug($content);
-    
-    if ($diagnosticPrintEnabled)
-        print ($content);
+	static $log;
+	static $enabled = false;
+	
+	/**
+	 * Performs the output
+	 */
+	static function diagnosticPrint()
+	{
+		if (!self::$log)
+			self::$log = \Logger::getLogger('Diagnostic');
+		
+		if (self::$log)
+			self::$log->debug($content);
+		
+		if (self::$enabled)
+			print ($content);
+	}
+	
+	/**
+	 * Enables / disables the output to the Console
+	 * @param bool $enable
+	 */
+	static function enable($enable = true)
+	{
+		self::$enabled = $enable;
+	}
+	
+	/**
+	 * Queries the enabled flag
+	 * @return boolean|bool
+	 */
+	static function enabled()
+	{
+		return self::$enabled;
+	}
 }
 
 /**
- * Returns the diagnostic Print Enabled flag
- * @return boolean
- */
-function diagnosticPrintEnabled()
-{
-    global $diagnosticPrintEnabled;
-    
-    return $diagnosticPrintEnabled;
-}
-
-/**
- * Enables / disables the diagnostic print during runtime
- */
-function enableDiagnosticPrint($enable = true)
-{
-    global $diagnosticPrintEnabled;
-    $diagnosticPrintEnabled = $enable;
-}
-
-/*
  * Emulates the well-known HashSet
  */
 class HashSet
 {
-    /*
+    /**
      * Ctor. Expects a non-associative array (strings as values)
      */
     public function __construct($array)
