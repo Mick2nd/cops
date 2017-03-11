@@ -3,87 +3,19 @@
 
 namespace VirtualLibraries
 {
-	/**
-	 * Abstract class as "interface" for both ForeignColumnComplex and ForeignColumnSimple
-	 * @author Jürgen
-	 *
-	 */
-	abstract class ForeignColumn
-	{
-		/**
-		 * The Key name that's also used in the Foreign Columns dictionary
-		 * @var string
-		 */
-		public $Name;
-
-		/**
-		 * The target Data Table which connects itself to the Books table
-		 * @var string
-		 */
-		var $DataTable;
-		
-		/**
-		 * The target Data Table's field containing the real data
-		 * @var string
-		 */
-		var $DataField;
-		
-		/**
-		 * The complete column name of the book id
-		 * @return string
-		 */
-		public function getBookId()
-		{
-			return "books.id";
-		}
-		
-		/**
-		 * The complete column name of the target data tables id
-		 * @return string
-		 */
-		public function getDataTableId()
-		{
-			return $this->DataTable . ".id";
-		}
-		
-		abstract function getLinkedBook();
-		
-		abstract function getSql($id);
-		
-		abstract function getSqlId($id);
-	}
-	
-	/**
-	 * This is the simple type of augmenting data columns: with a n:1 relationsship to the books
-	 * table.
-	 * @author Jürgen
-	 *
-	 */
-	class ForeignColumnSimple extends ForeignColumn
-	{
-		public function getLinkedBook()
-		{
-			
-		}
-
-		public function getSql($id)
-		{
-				
-		}
-
-		public function getSqlId($id)
-		{
-				
-		}
-	}
-	
     /**
      * Contains data and a few helper properties to establish the connection of a book to augmenting data
      * @author Jürgen
      *
      */
-    class ForeignColumnComplex extends ForeignColumn
+    class ForeignColumn
     {
+        /**
+         * The Key name that's also used in the Foreign Columns dictionary
+         * @var string
+         */
+        var $Name;
+
         /**
          * The table which constitutes a link ("link table") between the books table
          * and the "DataTable"
@@ -96,6 +28,19 @@ namespace VirtualLibraries
          * @var string
          */
         var $LinkField;
+
+        /**
+         * The target Data Table to which the link is realized
+         * @var string
+         */
+        var $DataTable;
+
+        /**
+         * The target Data Table's field containing the real data
+         * @var string
+         */
+        var $DataField;
+
 
         /**
          * The complete column name of the book link in the Link Table
@@ -122,6 +67,24 @@ namespace VirtualLibraries
         public function getLinkedDataField()
         {
             return $this->DataTable . "." . $this->DataField;
+        }
+
+        /**
+         * The complete column name of the book id
+         * @return string
+         */
+        public function getBookId()
+        {
+            return "books.id";
+        }
+
+        /**
+         * The complete column name of the target data tables id
+         * @return string
+         */
+        public function getDataTableId()
+        {
+            return $this->DataTable . ".id";
         }
         
         /**
@@ -246,7 +209,7 @@ namespace VirtualLibraries
             if ($this->foreignColumns == null)
                 $this->foreignColumns = array();
 
-            $foreignColumn = new ForeignColumnComplex();
+            $foreignColumn = new ForeignColumn();
             $foreignColumn->Name = $name;
             $foreignColumn->DataTable = $dataTable;
             $foreignColumn->DataField = $dataField;
@@ -272,7 +235,7 @@ namespace VirtualLibraries
         /**
          * Indexer to access the individual Foreign Columns by name
          * @param unknown $key
-         * @return ForeignColumnComplex|NULL
+         * @return ForeignColumn|NULL
          */
         public function getItem($key)
         {

@@ -9,6 +9,12 @@
 
 namespace VirtualLibraries;
 
+require_once ("calibrePreferences.php");
+require_once (dirname(__DIR__) . "/base.php");
+require_once (dirname(__DIR__) . "/OPDS_renderer.php");
+
+use Base;
+
 /**
  * Class supports the use of Calibre Virtual Libraries as Facets
  * @author Jürgen

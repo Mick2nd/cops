@@ -2,8 +2,7 @@
 
 namespace VirtualLibraries
 {
-	require_once 'Utilities.php';
-	require_once 'SqlUtilities.php';
+    require_once 'sqlUtilities.php';
     use PDO ;
     use ErrorException ;
     
@@ -76,7 +75,7 @@ namespace VirtualLibraries
                 $result = $this->db->prepare ($query);
                 if (!$result)
                 {
-                    Diagnostic::diagnosticPrint("Db returnes Nothing for query $query\n");
+                    diagnosticPrint("Db returnes Nothing for query $query\n");
                     return false;
                 }
                 
@@ -157,7 +156,7 @@ namespace VirtualLibraries
                 $columns[$meta["name"]] = $meta["sqlite:decl_type"];
             }
             
-            if (Diagnostic::enabled())
+            if (diagnosticPrintEnabled())
             {
                 echo "getTypes determined types of books columns";
                 var_dump($columns);
@@ -238,7 +237,7 @@ namespace VirtualLibraries
          */
         private function printErrorInfo($query)
         {
-            if (Diagnostic::enabled())
+            if (diagnosticPrintEnabled())
             {
                 echo "Query was: \n$query\n";
                 echo "PDO::errorInfo():\n";
