@@ -1,5 +1,4 @@
 <?php
-//namespace lib;
 /**
  * COPS (Calibre OPDS PHP Server) class file
  *

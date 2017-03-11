@@ -1,14 +1,10 @@
 <?php
-//namespace lib;
 /**
  * COPS (Calibre OPDS PHP Server) class file
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Jürgen Habelt <juergen@habelt-jena.de>
  */
-
-// Insert the path where you unpacked log4php
-//require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use VirtualLibraries\BookFilter;
 use VirtualLibraries\DbProxy;
