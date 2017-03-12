@@ -17,7 +17,7 @@ abstract class Diagnostic
 	/**
 	 * Performs the output
 	 */
-	static function diagnosticPrint()
+	static function diagnosticPrint($content)
 	{
 		if (!self::$log)
 			self::$log = \Logger::getLogger('Diagnostic');
