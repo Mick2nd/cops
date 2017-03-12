@@ -12,51 +12,7 @@
     
     ini_set("log_errors", 1);                                           // do this before instantiating ... php logging prepared !
     ini_set("error_reporting", E_ALL);
-    ini_set("error_log", "/share/MD0_DATA/Web/copsgit/phplog.txt");     // TODO: change for production!
-
-    $_SESSION['apppath'] = dirname(__FILE__);
-	    
-    /**
-     * This function more or less works, but the additions checking for definition of classes
-     * are more or less useless.
-     * No idea what causes the require_once of Author class to fail.
-     */
-    /*
-	*/
-    spl_autoload_register(function ($class_name)
-    {
-    	try 
-    	{
-    		if (substr($class_name, 0, 16) !== 'VirtualLibraries')
-    		{
-    			return false;
-    		}
-    		
-    		$fn = str_replace('\\', '/', $class_name) . '.php';
-    		$path = $_SESSION['apppath'] . '/' . $fn;
-    		trigger_error("Trying to autoload class $class_name at $path", E_USER_NOTICE);
-    		if (class_exists($class_name))
-    		{
-    			trigger_error("Class '$class_name' already exists", E_USER_NOTICE);
-    			return false;
-    		}
-    		if (!file_exists($path))
-    		{
-    			trigger_error("File '$path' does not exist", E_USER_NOTICE);
-    			return false;
-    		}
-
-    		trigger_error("Autoloading class $class_name at $path", E_USER_NOTICE);
-    		require_once $path;
-    		return true;
-    	}
-    	catch (Exception $e) 
-    	{
-    		trigger_error($e, E_USER_ERROR);
-    		return false;
-    	}
-    	
-    });
+    ini_set("error_log", dirname(__FILE__) . 'phplog.txt');
     
     \Logger::configure('config.xml');
     
