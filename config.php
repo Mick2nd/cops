@@ -34,3 +34,5 @@ if(!is_null($config['cops_basic_authentication']) &&
         exit;
     }
 }
+
+\Logger::configure('config.xml');

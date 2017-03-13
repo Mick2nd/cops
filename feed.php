@@ -12,9 +12,7 @@
     
     ini_set("log_errors", 1);                                           // do this before instantiating ... php logging prepared !
     ini_set("error_reporting", E_ALL);
-    ini_set("error_log", dirname(__FILE__) . 'phplog.txt');
-    
-    \Logger::configure('config.xml');
+    ini_set("error_log", dirname(__FILE__) . '/phplog.txt');
     
     header('Content-Type:application/xml');
     $page = getURLParam('page', Base::PAGE_INDEX);
