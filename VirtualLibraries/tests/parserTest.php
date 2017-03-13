@@ -2,88 +2,169 @@
 
 namespace VirtualLibraries
 {
-    require_once dirname(__DIR__) . '/virtualLibrariesParser.php';
-    require_once dirname(dirname(__DIR__)) . '/log4php/Logger.php';
+	/**
+	 * COPS (Calibre OPDS PHP Server) test file
+	 *
+	 * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+	 * @author     Jürgen Habelt <juergen@habelt-jena.de>
+	 */
+	
+	require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
     
-    \Logger::configure(dirname(dirname(__DIR__)) . '/config.xml');
+	use PHPUnit\Framework\TestCase;
+	use phpDocumentor\Reflection\Types\Boolean;
+		
+	\Logger::configure(dirname(dirname(__DIR__)) . '/config.xml');
 	date_default_timezone_set('Europe/Berlin');
     
-    class parserTest
+    class parserTest extends TestCase
     {
-        /*
+        /**
          * Match a single string
+         * @param string
+         * @return NULL|Boolean
          */
-        function matchString($parse_string)
+        private function matchString($string)
         {
-            print "Printing a String parse\n";
-        
-            $parser= new VirtualLibraryParser($parse_string);
-            $res = $parser->match_StringComp() ;
-            if ($res !== FALSE)
-            {
-                print("$parse_string is parsed as:\n");
-                var_dump($res);
-            }
-            else
-            {
-                print "No Match\n" ;
-            }
+            $parser = new VirtualLibrariesParser("\"$string\"");			// enclose string with quotes
+            $res = $parser->match_String() ;
+            if ($res === FALSE)
+            	return null;
+            
+            return $res['puretext'];										// must return a match and the original text
         }
         
-        /*
-         * Prints a single Logical Relation
+        /**
+         * Helper unaryOp tests a unary operation
+         * @param string $op
+         * @param string $truth
+         * @return NULL|Boolean
          */
-        function printRelation($op, $operand1, $operand2 = null)
+        private function unaryOp($op, $truth)
         {
-            $parse_string = "$operand1 $op $operand2";
-            if ($operand2 === null)
-                $parse_string = "$op $operand1";
-        
-                $parser= new VirtualLibraryParser($parse_string);
-                $res = $parser->match_Disjunction() ;
-                if ($res !== FALSE)
-                {
-                    $bool_string = var_export($res['val'], true);
-                    print("$parse_string = $bool_string\n");
-                }
-                else
-                {
-                    print "No Match\n" ;
-                }
+        	$parser = new VirtualLibrariesParser("$op $truth");
+        	$res = $parser->match_Disjunction();
+        	if ($res === FALSE)
+        		return null;
+        	
+        	return $res['val'];
         }
         
-        /*
-         * Prints Logical Relations for Unary and Binary operations
+        /**
+         * Helper binaryOp tests a binary operation
+         * @param string $op
+         * @param string $truth1
+         * @param string $truth2
+         * @return NULL|Boolean
          */
-        function printTruthTables()
+        private function binaryOp($op, $truth1, $truth2)
         {
-            $operators = array("and" , "or");
-            $truth_values = array("false", "true");
+        	$parser = new VirtualLibrariesParser("$truth1 $op $truth2");
+        	$res = $parser->match_Disjunction();
+        	if ($res === FALSE)
+        		return null;
+        		 
+        	return $res['val'];
+       	}
+       	
+       	/**
+       	 * Helper provides comparison string and returns Boolean test result
+       	 * @param string $comparison
+       	 * @return NULL|Boolean
+       	 */
+       	private function compare($comparison)
+       	{
+       		$parser = new VirtualLibrariesParser($comparison, new ClientSite());
+       		$parser->prepare(100);
+       		$res = $parser->match_Disjunction();
+       		if ($res === FALSE)
+       			return null;
+       			 
+       		return $res['val'];
+       	}
         
-            print "Printing a truth table\n";
+       	/**
+       	 * test of unary not
+       	 */
+        function testUnaryNot()
+        {
+        	parent::assertFalse(is_null($this->unaryOp('not', 'true')), 'not \'true\' should return a valid result');
+        	parent::assertEquals(false, $this->unaryOp('not', 'true'), 'not \'true\' should return \'false\'');
+        	parent::assertEquals(true, $this->unaryOp('not', 'false'), 'not \'false\' should return \'true\'');
+        }
         
-            print "For operator " . "not" . "\n";
-            foreach($truth_values as $val)
-            {
-                self::printRelation("not", $val);
-            }
+        /**
+         * test of binary or
+         */
+        function testBinaryOr()
+        {
+        	parent::assertFalse(is_null($this->binaryOp('or', 'true', 'true')), '\'true\' or \'true\' should return a valid result');
+        	parent::assertEquals(false, $this->binaryOp('or', 'false', 'false'), '\'false\' or \'false\' should return \'false\'');
+        	parent::assertEquals(true, $this->binaryOp('or', 'false', 'true'), '\'false\' or \'true\' should return \'true\'');
+        	parent::assertEquals(true, $this->binaryOp('or', 'true', 'false'), '\'true\' or \'false\' should return \'true\'');
+        	parent::assertEquals(true, $this->binaryOp('or', 'true', 'true'), '\'true\' or \'true\' should return \'true\'');
+        }
         
-            foreach($operators as $op)
-            {
-                print "For operator " . $op . "\n";
-                foreach($truth_values as $val1)
-                {
-                    foreach($truth_values as $val2)
-                    {
-                        self::printRelation($op, $val1, $val2);
-                    }
-                }
-            }
-        }        
+        /**
+         * test of binary and
+         */
+        function testBinaryAnd()
+        {
+        	parent::assertFalse(is_null($this->binaryOp('and', 'true', 'true')), '\'true\' or \'true\' should return a valid result');
+        	parent::assertEquals(false, $this->binaryOp('and', 'false', 'false'), '\'false\' or \'false\' should return \'false\'');
+        	parent::assertEquals(false, $this->binaryOp('and', 'false', 'true'), '\'false\' or \'true\' should return \'false\'');
+        	parent::assertEquals(false, $this->binaryOp('and', 'true', 'false'), '\'true\' or \'false\' should return \'false\'');
+        	parent::assertEquals(true, $this->binaryOp('and', 'true', 'true'), '\'true\' or \'true\' should return \'true\'');
+        }
+        
+        /**
+         * test a few of the compare expressions
+         */
+        function testCompare()
+        {
+        	parent::assertFalse(is_null(self::compare('authors:"Balzac"')), 'authors:"Balzac" should return a valid result');
+        	parent::assertEquals(true, self::compare('authors:"Balzac"'), 'authors:"Balzac" should return \'true\'');
+        	parent::assertEquals(true, self::compare('authors:true'), 'authors:true should return \'true\'');
+        	parent::assertEquals(false, self::compare('authors:false'), 'authors:false should return \'false\'');
+        }
+        
     }
-    
 
-    parserTest::printTruthTables();
-    
-    parserTest::matchString('authors:"All of this is inside!"');    
+    /**
+     * Injected into parser for tests
+     * @author Jürgen
+     *
+     */
+    class ClientSite implements IClientSite
+    {
+    	/**
+    	 * Interface method used by Parser
+    	 * {@inheritDoc}
+    	 * @see \VirtualLibraries\IClientSite::test()
+    	 */
+    	function test($sql)
+    	{
+    		return true;
+    	}
+    	
+    	/**
+    	 * Dummy interface method
+    	 * {@inheritDoc}
+    	 * @see \VirtualLibraries\IClientSite::create()
+    	 */
+    	function create($parseString)
+    	{
+    		 
+    	}
+    	
+    	/**
+    	 * Dummy interface method
+    	 * {@inheritDoc}
+    	 * @see \VirtualLibraries\IClientSite::isSelected()
+    	 */
+    	function  isSelected($id)
+    	{
+    		 
+    	}
+    }
 }

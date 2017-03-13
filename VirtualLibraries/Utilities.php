@@ -26,7 +26,7 @@ abstract class Diagnostic
 			self::$log->debug($content);
 		
 		if (self::$enabled)
-			print ($content);
+			print ("$content\n");
 	}
 	
 	/**

@@ -1295,7 +1295,8 @@ public function Disjunction_Operand2 (&$res, $sub)
     function getResult(&$res, $sub)                                                                    // Term is either one of the comparisons or a Search
     {
         $rule = $res["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
+        $subrule = $sub["_matchrule"];
+        Diagnostic::diagnosticPrint("In $rule, sub rule $subrule, detected: " . var_export($sub['val'], true));
         
         return $sub['val'];
     }
