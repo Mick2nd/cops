@@ -2,9 +2,7 @@
 
 namespace VirtualLibraries;
 
-require_once 'sqlUtilities.php';
-require_once 'utilities.php';
-require_once dirname(__DIR__) . '/php-peg/autoloader.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/vendor/hafriedlander/php-peg/autoloader.php';
 
 use hafriedlander\Peg\Parser;
@@ -309,16 +307,6 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
         
         return $sub['val'];
     }
-}
-
-/// <summary>
-/// Use this iface to query an outside db about book
-/// </summary>
-interface IClientSite
-{
-    public function create($parseString);
-    public function isSelected($id);
-    public function test($sql);
 }
 
 // TODO: Parser komplettieren (search, callbacks zu db, bool vergleich etc.)

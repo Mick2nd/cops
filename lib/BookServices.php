@@ -156,7 +156,11 @@ class BookServices
 	 */
 	public function errorHandler ($errno, $errstr, $errfile = null, $errline = 0, array $errcontext = null)
 	{
-		$this->log->error("$errstr in $errfile on $errline");
+		if ($errno == E_USER_NOTICE)
+			$this->log->info("$errstr in $errfile on $errline");
+		else
+			$this->log->error("$errstr in $errfile on $errline");
+		
 		return false;
 	}
 

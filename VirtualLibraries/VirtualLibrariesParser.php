@@ -1301,5 +1301,4 @@ public function Disjunction_Operand2 (&$res, $sub)
     }
 }
 
-
 // TODO: Parser komplettieren (search, callbacks zu db, bool vergleich etc.)
