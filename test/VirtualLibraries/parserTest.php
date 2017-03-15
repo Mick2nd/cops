@@ -9,14 +9,11 @@ namespace VirtualLibraries
 	 * @author     Jürgen Habelt <juergen@habelt-jena.de>
 	 */
 	
-	require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
-    
+	require_once 'config.php';
+
 	use PHPUnit\Framework\TestCase;
 	use phpDocumentor\Reflection\Types\Boolean;
-		
-	\Logger::configure(dirname(dirname(__DIR__)) . '/config.xml');
-	date_default_timezone_set('Europe/Berlin');
-    
+	
     class parserTest extends TestCase
     {
         /**

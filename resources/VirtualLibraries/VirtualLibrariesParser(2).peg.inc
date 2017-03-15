@@ -2,8 +2,8 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
-require_once dirname(__DIR__) . '/vendor/hafriedlander/php-peg/autoloader.php';
+require_once dirname(__DIR__) . '/../vendor/autoload.php';
+require_once dirname(__DIR__) . '/../vendor/hafriedlander/php-peg/autoloader.php';
 
 use hafriedlander\Peg\Parser;
 
@@ -50,14 +50,17 @@ class VirtualLibraryParser extends Parser\Basic
 # Instead of using free names for columns in tables we use predefined ones
 # We assign them properties like field name, table name and format for later use
 
-TextColumn: all: ( books: ('title' | 'sort' | 'author_sort' | 'isbn' | 'lccn' | 'path' | 'uuid') |
+TextColumn: All: ( books: ('title' | 'sort' | 'author_sort' | 'isbn' | 'lccn' | 'path' | 'uuid') |
 	authors: ('authors' | 'author') | languages: 'languages' | publishers: ('publishers' | 'publisher') | 
 	ratings: 'ratings' | series: 'series' | series_sort: 'series_sort' | tags: 'tags' |
 	comments: 'comments' )
-	function all(&$res, $sub)
+	
+	function All(&$res, $sub)
 	{
 		$res['name'] = $sub['text'];
 		$res['format'] = 'TEXT';
+		$res['table'] = $sub['table'];
+		$res['field'] = $sub['field'];
 	}
 	function books(&$res, $sub)
 	{

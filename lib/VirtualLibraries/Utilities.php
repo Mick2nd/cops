@@ -2,7 +2,7 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/../vendor/autoload.php';
 
 /**
  * Class to log and print dianostic info

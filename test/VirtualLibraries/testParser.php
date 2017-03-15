@@ -3,17 +3,17 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(dirname(__DIR__)) . '/php-peg/autoloader.php';
-require_once dirname(dirname(__DIR__)) . '/log4php/Logger.php';
-
-\Logger::configure(dirname(dirname(__DIR__)) . '/config.xml');
-date_default_timezone_set('Europe/Berlin');
+require_once dirname(__DIR__) . '/../vendor/autoload.php';
+require_once dirname(__DIR__) . '/../vendor/hafriedlander/php-peg/autoloader.php';
 
 use hafriedlander\Peg\Parser;
 
 class testParser extends Parser\Basic
 {
 	private $log;
+	public $invokedAll;
+	public $invokedBool;
+	public $invokedGeneric;
 	
 	/**
 	 * Ctor. Initializes the logger.
@@ -23,6 +23,10 @@ class testParser extends Parser\Basic
 		parent::__construct($expr);
 		
 		$this->log = \Logger::getLogger(__CLASS__);
+		
+		$this->invokedAll = false;
+		$this->invokedBool = false;
+		$this->invokedGeneric = false;
 	}
 	
     /**
@@ -329,7 +333,7 @@ public function Expr2_Bool (&$res, $sub)
         $res['text'] = 'FROM Bool function';
     }
 
-/* Expr3: All: (Bool | Name | String) */
+/* Expr3: All: (Bool: Bool | Name | String) */
 protected $match_Expr3_typestack = array('Expr3');
 function match_Expr3 ($stack = array()) {
 	$matchrule = "Expr3"; $result = $this->construct($matchrule, $matchrule, null);
@@ -343,7 +347,7 @@ function match_Expr3 ($stack = array()) {
 			$matcher = 'match_'.'Bool'; $key = $matcher; $pos = $this->pos;
 			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
 			if ($subres !== FALSE) {
-				$this->store( $result, $subres );
+				$this->store( $result, $subres, "Bool" );
 				$_53 = TRUE; break;
 			}
 			$result = $res_46;
@@ -392,14 +396,29 @@ function match_Expr3 ($stack = array()) {
 	}
 }
 
+public function Expr3_STR (&$res, $sub)
+    {
+        $res['text*'] = 'FROM * function';
+		$this->invokedGeneric = true;
+		$result = var_export($res, true);
+    	$this->log->info("In function *, result is:\n $result");
+    }
+
 public function Expr3_All (&$res, $sub)
     {
-    	$this->log->info("In function All");
+        $res['textAll'] = 'FROM All function';
+        $res['sub'] = $sub['textBool'];
+		$this->invokedAll = true;		
+		$result = var_export($res, true);
+    	$this->log->info("In function All, result is:\n $result");
     }
 
 public function Expr3_Bool (&$res, $sub)
     {
-    	$this->log->info("In function Bool");
+        $res['textBool'] = 'FROM Bool function';
+		$this->invokedBool = true;
+		$result = var_export($res, true);
+    	$this->log->info("In function Bool, result is:\n $result");
     }
 
     

@@ -3,17 +3,17 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(dirname(__DIR__)) . '/php-peg/autoloader.php';
-require_once dirname(dirname(__DIR__)) . '/log4php/Logger.php';
-
-\Logger::configure(dirname(dirname(__DIR__)) . '/config.xml');
-date_default_timezone_set('Europe/Berlin');
+require_once dirname(__DIR__) . '/../vendor/autoload.php';
+require_once dirname(__DIR__) . '/../vendor/hafriedlander/php-peg/autoloader.php';
 
 use hafriedlander\Peg\Parser;
 
 class testParser extends Parser\Basic
 {
 	private $log;
+	public $invokedAll;
+	public $invokedBool;
+	public $invokedGeneric;
 	
 	/**
 	 * Ctor. Initializes the logger.
@@ -23,6 +23,10 @@ class testParser extends Parser\Basic
 		parent::__construct($expr);
 		
 		$this->log = \Logger::getLogger(__CLASS__);
+		
+		$this->invokedAll = false;
+		$this->invokedBool = false;
+		$this->invokedGeneric = false;
 	}
 	
     /**
@@ -79,14 +83,34 @@ Expr2:  All: (Bool | Name | String)
         $res['text'] = 'FROM Bool function';
     }
 
-Expr3: All: (Bool | Name | String)
+Expr3: All: (Bool: Bool | Name | String)
+    function *(&$res, $sub)
+    {
+        $res['text*'] = 'FROM * function';
+		
+		$this->invokedGeneric = true;
+		
+		$result = var_export($res, true);
+    	$this->log->info("In function *, result is:\n $result");
+    }
     function All(&$res, $sub)
     {
-    	$this->log->info("In function All");
+        $res['textAll'] = 'FROM All function';
+        $res['sub'] = $sub['textBool'];
+		
+		$this->invokedAll = true;		
+		
+		$result = var_export($res, true);
+    	$this->log->info("In function All, result is:\n $result");
     }
     function Bool(&$res, $sub)
     {
-    	$this->log->info("In function Bool");
+        $res['textBool'] = 'FROM Bool function';
+		
+		$this->invokedBool = true;
+		
+		$result = var_export($res, true);
+    	$this->log->info("In function Bool, result is:\n $result");
     }
 */    
     

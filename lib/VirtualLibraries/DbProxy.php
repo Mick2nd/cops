@@ -14,18 +14,35 @@ namespace VirtualLibraries
      */
     class DbProxy
     {
-        /**
+    	static $log;
+    	
+    	/**
+    	 * Ctor.
+    	 */
+    	public function __construct()
+    	{
+    		self::$log = \Logger::getLogger(__CLASS__);
+    	}
+    	 
+    	 /**
          * This opens the db
          * @param mixed $db - path to db file, if not given an internal path is used
          * @return boolean
          */
-        public function open($db = '/share/MD0_DATA/Public/dev/metadata.db')
+        public function open($db = null)
         {
             try
             {
-                if (gettype($db) === 'string' && strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') 
+                if ($db === null)																	// as default
                 {
-                    $db = 'K:\dev\metadata.db';
+                	if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+                	{
+                		$db = 'K:\dev\metadata.db';													// use windows or
+                	}
+                	else
+                	{
+                		$db = '/share/MD0_DATA/Public/dev/metadata.db';								// NAS defaults for development
+                	}
                 }
                 
                 if (gettype($db) === 'string')
@@ -190,7 +207,10 @@ namespace VirtualLibraries
         {
             if (gettype($regex) !== 'string' || gettype($str) !== 'string')
                 throw new ErrorException("Argument type not string");
-        
+
+            if (self::$log)
+            	self::$log->debug("regexp protocol: regex: $regex, str: $str");
+            
             return preg_match('/' . $regex . '/', $str) === 1;
         }
         

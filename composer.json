@@ -31,7 +31,8 @@
         "phing/phing": "2.*"
     },
     "autoload": {
-        "classmap": ["lib/", "resources/", "VirtualLibraries/"]
+        "classmap": ["lib/", "resources/"],
+        "exclude-from-classmap": ["resources/VirtualLibraries/"]
     },
     "repositories": [
         {

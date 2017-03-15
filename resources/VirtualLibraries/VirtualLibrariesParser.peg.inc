@@ -2,8 +2,8 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
-require_once dirname(__DIR__) . '/vendor/hafriedlander/php-peg/autoloader.php';
+require_once dirname(__DIR__) . '/../vendor/autoload.php';
+require_once dirname(__DIR__) . '/../vendor/hafriedlander/php-peg/autoloader.php';
 
 use hafriedlander\Peg\Parser;
 
