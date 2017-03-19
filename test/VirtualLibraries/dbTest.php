@@ -15,6 +15,9 @@ namespace VirtualLibraries
     {
     	private $log;
     	
+    	/**
+    	 * Ctor.
+    	 */
     	function __construct()
     	{
     		$this->log = \Logger::getLogger(__CLASS__);
@@ -61,12 +64,12 @@ namespace VirtualLibraries
         	 
         	parent::assertTrue($proxy->open(self::getDbPath()), 'The db should be opened.');
         	
-        	$result = $proxy->executeQueryAll("select id, title from books where title regexp 'Adventures'");
+        	$result = $proxy->executeQueryAll("select id, title from books where title regexp 'Alice''s Adventures'");
         	$this->log->info(var_export($result, true));
         	
         	parent::assertNotEquals(false, $result, 'The db should contain a book entry with \'Alice\'s Adventures...\'');
         	parent::assertNotEquals(0, count($result), 'The db should contain a book entry with \'Alice\'s Adventures...\'');
-        	parent::assertNotEquals(false, strpos($result[0]['title'], 'Adventures'), 'The db should return \'Alice\'s Adventures...\'');
+        	parent::assertEquals(0, strpos($result[0]['title'], 'Alice\'s Adventures'), 'The db should return \'Alice\'s Adventures...\'');
         	
         	$proxy->close();
         }
@@ -81,11 +84,13 @@ namespace VirtualLibraries
         	parent::assertTrue($proxy->open(self::getDbPath()), 'The db should be opened.');
         	
         	$embedded = ForeignColumns::getDefault()->getItem("authors")->getSelect(0);										// contains group_concat
-           	$result = $proxy->executeQueryAll("select id, title, $embedded \nfrom books where title regexp 'Adventures'");
+           	$result = $proxy->executeQueryAll("select id, title, $embedded \nfrom books where title regexp 'Alice''s Adventures'");
         	
         	parent::assertNotEquals(false, $result, 'The db should contain a book entry with \'Alice\'s Adventures...\'');
        		$title = $result[0]['title'];
        		$authors = $result[0]['authors'];
+       		
+       		parent::assertEquals('Lewis Carroll', $authors, 'The author should be \'Lewis Carroll\'');
        		$this->log->info("Found using group_concat: '$title' by '$authors'.");
         	
         	$proxy->close();

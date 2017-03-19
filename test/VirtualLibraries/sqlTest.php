@@ -2,14 +2,12 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(__DIR__) . '/sqlUtilities.php';
-require_once dirname(dirname(__DIR__)) . '/log4php/Logger.php';
+require_once 'config.php';
 
-\Logger::configure(dirname(dirname(__DIR__)) . '/config.xml');
-date_default_timezone_set('Europe/Berlin');
 
 /**
  * Tests for the columns module delivering SQL statements
+ * The sql statements are logged, no unit tests !
  * @author Jürgen
  */
 class sqlTest
@@ -23,7 +21,8 @@ class sqlTest
         $ids = array(10, 11, 12, 13);
         $sql = ForeignColumns::getDefault()->getItem($table)->getSqlForeignIds($ids);
         
-        print("\n$sql\n");
+        $log = \Logger::getLogger(__CLASS__);
+        $log->info("Printing Sql query for '$table' table:\n$sql");
     }
 }
 

@@ -1240,7 +1240,7 @@ public function Disjunction_Operand2 (&$res, $sub)
         $rule = $res["_matchrule"];
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
-        $compText = $sub['comptext'] ? $sub['comptext'] : $sub['text'];  
+        $compText = array_key_exists('comptext', $sub) ? $sub['comptext'] : $sub['text'];  
         $res['text'] = $res['name'] . $res['comp'] . $compText;                                 // prepare the comparison
         $query = ForeignColumns::getDefault()->GetSql($res['name'], $this->id) . $res['text'];  // and embbed it into Sql
         if ($this->clientSite)
