@@ -2,7 +2,6 @@
 
 namespace VirtualLibraries
 {
-    require_once 'Utilities.php';
 
     /**
      * Implements a filter for books in the Calibre (Sqlite) DB
@@ -81,13 +80,12 @@ namespace VirtualLibraries
         {
             try 
             {
-                $this->parser->prepare($id);
-                $res = $this->parser->match_Disjunction();
+                $res = $this->parser->test($id);                
                 
                 $this->log->debug("Testing in 'isSelected' for id $id");
                 $this->log->debug("Result is: " . var_export($res, true));
                 
-                return $res['val'];                
+                return $res;                
             }
             catch (\Exception $ex)
             {

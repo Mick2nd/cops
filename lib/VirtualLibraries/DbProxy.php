@@ -2,8 +2,6 @@
 
 namespace VirtualLibraries
 {
-	require_once 'Utilities.php';
-	require_once 'SqlUtilities.php';
     use PDO ;
     use ErrorException ;
     
@@ -58,7 +56,7 @@ namespace VirtualLibraries
                     'VirtualLibraries\DbProxy::concatStep', 
                     'VirtualLibraries\DbProxy::concatFini', 2);
                 
-                NativeColumns::getDefault()->setColumnInfo($this->getTypes("books"));               // the Native Columns singleton needs type info from books
+                ColumnInfo::getDefault()->setColumnInfo($this->getTypes("books"));                  // the Column Info singleton needs type info from books
 
                 return true;
             }
