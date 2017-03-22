@@ -2,7 +2,6 @@
 
 namespace VirtualLibraries;
 
-require_once dirname(__DIR__) . '/../vendor/autoload.php';
 require_once dirname(__DIR__) . '/../vendor/hafriedlander/php-peg/autoloader.php';
 
 use hafriedlander\Peg\Parser;
@@ -17,7 +16,18 @@ class VirtualLibrariesParser extends Parser\Basic
     var $clientSite;
     var $id;
     var $savedFilters;
+    var $attachedColumnIds;
+    var $attachedColumnIdCombinations;
+    var $dataId;
+    var $identifiersId;
+    var $log;
     
+    /**
+     * Ctor.
+     * @param string $parse_string
+     * @param IClientSite $clientSite
+     * @param array $savedSearches
+     */
     function __construct($parse_string, IClientSite $clientSite = null, array $savedSearches = null)
     {
         parent::__construct($parse_string);
@@ -25,6 +35,51 @@ class VirtualLibrariesParser extends Parser\Basic
         $this->savedSearches = $savedSearches;
         $this->clientSite = $clientSite;
         $this->savedFilters = array();
+        
+        $this->log = \Logger::getLogger(__CLASS__);
+    }
+    
+    /**
+     * This function performs the real test, if the given $id passes the search expression
+     * @param integer $id
+     * @return boolean
+     */
+    public function test($id)
+    {
+        try
+        {
+            $this->resetCache();                                                                        // reset the cache for Attached Column Ids            
+            $this->prepareParse($id);                                                                   // prepare for parsing
+            $res = match_Disjunction();                                                                 // invoke parser
+            
+            if ($this->attachedColumnIds === null ||                                                    // in the parser no attached columns with more than one id were detected
+                (!array_key_exists('data', $this->attachedColumnIds) &&
+                 !array_key_exists('identifiers', $this->attachedColumnIds)))
+            {
+                return $res['val'];                                                                     // then return the result
+            }
+            
+            $combs = $this->prepareIds();                                                               // prepare the ids
+            for ($i = 0; $i < $combs; $i++)                                                             // loop through all combinations
+            {
+                $this->dataId = array_shift($this->attachedColumnIdCombinations['data']);               // remove id from front and store
+                $this->identifiersId = array_shift($this->attachedColumnIdCombinations['identifiers']);                
+                
+                $this->prepareParse($id);                                                               // reset the parser
+                $res = match_Disjunction();                                                             // invoke parser
+                if ($res['val'] === true)
+                {
+                    return true;                                                                        // return a true result
+                }
+            }
+            
+            return false;
+        } 
+        catch (Exception $e)
+        {
+            return false;
+        }
+        
     }
 
     /**
@@ -33,13 +88,66 @@ class VirtualLibrariesParser extends Parser\Basic
      * 2. provide another id to test for
      * @param number $id
      */
-    public function prepare($id = 0)
+    private function prepareParse($id = 0)
     {
-        $this->pos = 0;
+        $this->pos = 0;                                             // reset the state of the parser
         $this->depth = 0 ;
-        $this->regexps = array() ;
+        $this->regexps = array();
         
-        $this->id = $id;
+        $this->id = $id;                                            // store the given $id to be used during parse
+    }
+    
+    /**
+     * Reset the cache for Attached Column Ids
+     */
+    private function resetIdCache()
+    {
+        $this->attachedColumnIds = null;
+        $this->attachedColumnIdCombinations = null;
+        $this->dataId = 0;
+        $this->identifiersId = 0;        
+    }
+    
+    /**
+     * Prepare the ids for subsequent parse calls
+     * @return number - combinations of ids
+     */
+    private function prepareIds()
+    {
+        $countDataIds = count('data');
+        $countIdentifiersIds = count('identifiers');
+        
+        $dataIds = array();
+        $identifiersIds = array();
+        
+        for ($i = 0; $i < $countDataIds; $i++)
+        {
+            for($j = 0; $j < $countIdentifiersIds; $j++)
+            {
+                array_push($dataIds, $countDataIds === 1 ? 0 : $this->attachedColumnIds['data'][$i]);
+                array_push($identifiersIds, $countIdentifiersIds === 1 ? 0 : $this->attachedColumnIds['identifiers'][$j]);
+            }
+        }
+        
+        $this->attachedColumnIdCombinations['data'] = $dataIds;
+        $this->attachedColumnIdCombinations['identifiers'] = $identifiersIds;
+        
+        return $countDataIds * $countIdentifiersIds;
+    }
+    
+    /**
+     * For the given $table returns the count of ids
+     * @param string $table
+     * @return number
+     */
+    private function count($table)
+    {
+        if (array_key_exists($table, $this->attachedColumnIds))
+        {
+            return count($this->attachedColumnIds[$table]);
+        }
+        
+        return 1;
     }
     
 
@@ -250,7 +358,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
         
         $compText = array_key_exists('comptext', $sub) ? $sub['comptext'] : $sub['text'];  
         $res['text'] = $res['name'] . $res['comp'] . $compText;                                 // prepare the comparison
-        $query = ForeignColumns::getDefault()->GetSql($res['name'], $this->id) . $res['text'];  // and embbed it into Sql
+        $query = ColumnInfo::getDefault()->GetSqlWhere($res['name'], $this->id) . $res['text']; // and embbed it into Sql
         if ($this->clientSite)
             $res['val'] = $this->clientSite->test($query);                                      // then perform the test and store result in the tree
     }
@@ -265,7 +373,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
         $rule = $res["_matchrule"];
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
     
-        $query = ForeignColumns::getDefault()->GetSqlExists($res['name'], $this->id);           // prepare the query
+        $query = ColumnInfo::getDefault()->GetSqlExists($res['name'], $this->id);               // prepare the query
         if ($this->clientSite)
             $res['val'] = $this->clientSite->test($query) === $sub['val'];                      // then perform the test and store result in the tree
     }    
