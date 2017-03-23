@@ -9,4 +9,5 @@ interface IClientSite
 	public function create($parseString);
 	public function isSelected($id);
 	public function test($sql);
+	public function getIds($sql);
 }

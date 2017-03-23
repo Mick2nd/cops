@@ -62,11 +62,25 @@ namespace VirtualLibraries
                 $this->getLinkedBook() . "=" . $this->getBookId();
         }
         
+        /**
+         * Selects the daat for a Attached Column
+         * {@inheritDoc}
+         * @see \VirtualLibraries\Column::getSelect()
+         */
         public function getSelect($no)
         {
+            $dataField = $this->getDataField();
+            $name = $this->Name;
             
+            return 
+                "$dataField as $name";
         }
         
+        /**
+         * Sql query for Attached Column and value/text comparison
+         * {@inheritDoc}
+         * @see \VirtualLibraries\Column::getSqlWhere()
+         */
         public function getSqlWhere($id)
         {
             $dataField = $this->getDataField();
@@ -77,6 +91,11 @@ namespace VirtualLibraries
                 "select books.id, $dataField as $name from books $join \nwhere books.id=$id and ";
         }
         
+        /**
+         * Sql query for Attached Column and bool comparison
+         * {@inheritDoc}
+         * @see \VirtualLibraries\Column::getSqlExists()
+         */
         public function getSqlExists($id)
         {
             $linkedBook = $this->getLinkedBook();
