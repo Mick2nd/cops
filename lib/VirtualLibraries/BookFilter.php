@@ -151,6 +151,23 @@ namespace VirtualLibraries
 
             return $res;
         }
+        
+        /**
+         * Callback for the Parser (IclientSite) to perform a single query and return the result
+         * as array of ids.
+         * {@inheritDoc}
+         * @see \VirtualLibraries\IClientSite::getIds()
+         */
+        public function getIds($sql)
+        {
+            $res = $this->dbProxy->executeQuery($sql, 0);
+            if ($res)
+            {
+                return $res;
+            }
+            
+            return array();
+        }
 
         /**
          * Just to work with the DB instantiated inside

@@ -18,8 +18,7 @@ class VirtualLibrariesParser extends Parser\Basic
     var $savedFilters;
     var $attachedColumnIds;
     var $attachedColumnIdCombinations;
-    var $dataId;
-    var $identifiersId;
+    var $attachedColumnId;
     var $log;
     
     /**
@@ -28,7 +27,7 @@ class VirtualLibrariesParser extends Parser\Basic
      * @param IClientSite $clientSite
      * @param array $savedSearches
      */
-    function __construct($parse_string, IClientSite $clientSite = null, array $savedSearches = null)
+    public function __construct($parse_string, IClientSite $clientSite = null, array $savedSearches = null)
     {
         parent::__construct($parse_string);
         
@@ -48,13 +47,11 @@ class VirtualLibrariesParser extends Parser\Basic
     {
         try
         {
-            $this->resetCache();                                                                        // reset the cache for Attached Column Ids            
+            $this->resetIdCache();                                                                      // reset the cache for Attached Column Ids            
             $this->prepareParse($id);                                                                   // prepare for parsing
             $res = match_Disjunction();                                                                 // invoke parser
             
-            if ($this->attachedColumnIds === null ||                                                    // in the parser no attached columns with more than one id were detected
-                (!array_key_exists('data', $this->attachedColumnIds) &&
-                 !array_key_exists('identifiers', $this->attachedColumnIds)))
+            if ($this->isCacheEmpty())                                                                  // in the parser no attached columns with more than one id were detected
             {
                 return $res['val'];                                                                     // then return the result
             }
@@ -62,8 +59,9 @@ class VirtualLibrariesParser extends Parser\Basic
             $combs = $this->prepareIds();                                                               // prepare the ids
             for ($i = 0; $i < $combs; $i++)                                                             // loop through all combinations
             {
-                $this->dataId = array_shift($this->attachedColumnIdCombinations['data']);               // remove id from front and store
-                $this->identifiersId = array_shift($this->attachedColumnIdCombinations['identifiers']);                
+                $this->attachedColumnId = array(
+                    'data' => array_shift($this->attachedColumnIdCombinations['data']),                 // remove id from front and store
+                    'identifiers' => array_shift($this->attachedColumnIdCombinations['identifiers']));                
                 
                 $this->prepareParse($id);                                                               // reset the parser
                 $res = match_Disjunction();                                                             // invoke parser
@@ -73,7 +71,7 @@ class VirtualLibrariesParser extends Parser\Basic
                 }
             }
             
-            return false;
+            return false;                                                                               // no test succeeded
         } 
         catch (Exception $e)
         {
@@ -90,11 +88,25 @@ class VirtualLibrariesParser extends Parser\Basic
      */
     private function prepareParse($id = 0)
     {
-        $this->pos = 0;                                             // reset the state of the parser
+        $this->pos = 0;                                                         // reset the state of the parser
         $this->depth = 0 ;
         $this->regexps = array();
         
-        $this->id = $id;                                            // store the given $id to be used during parse
+        $this->id = $id;                                                        // store the given $id to be used during parse
+    }
+    
+    /**
+     * No attached columns with more than one id were detected in the parser 
+     */
+    private function isCacheEmpty()
+    {
+        if ($this->attachedColumnIds === null ||
+            (!array_key_exists('data', $this->attachedColumnIds) &&
+             !array_key_exists('identifiers', $this->attachedColumnIds)))
+        {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -104,8 +116,7 @@ class VirtualLibrariesParser extends Parser\Basic
     {
         $this->attachedColumnIds = null;
         $this->attachedColumnIdCombinations = null;
-        $this->dataId = 0;
-        $this->identifiersId = 0;        
+        $this->attachedColumnId = null;
     }
     
     /**
@@ -301,7 +312,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      * @param unknown $res
      * @param unknown $sub
      */
-    function getName(&$res, $sub)
+    private function getName(&$res, $sub)
     {
         $rule = $res["_matchrule"];
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
@@ -314,7 +325,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      * @param unknown $res
      * @param unknown $sub
      */
-    function getCompareOp(&$res, $sub)
+    private function getCompareOp(&$res, $sub)
     {
         $rule = $res["_matchrule"];
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
@@ -335,7 +346,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      * @param unknown $res
      * @param unknown $sub
      */
-    function getCompareOpString(&$res, $sub)
+    private function getCompareOpString(&$res, $sub)
     {
         $rule = $res["_matchrule"];
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
@@ -359,16 +370,27 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      * @param unknown $res
      * @param unknown $sub
      */
-    function getCompareResult(&$res, $sub)
+    private function getCompareResult(&$res, $sub)
     {
         $rule = $res["_matchrule"];
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
-        $compText = array_key_exists('comptext', $sub) ? $sub['comptext'] : $sub['text'];  
-        $res['text'] = $res['name'] . $res['comp'] . $compText;                                 // prepare the comparison
-        $query = ColumnInfo::getDefault()->GetSqlWhere($res['name'], $this->id) . $res['text']; // and embbed it into Sql
-        if ($this->clientSite)
+        $compText = array_key_exists('comptext', $sub) ? $sub['comptext'] : $sub['text'];
+        $name = $res['name'];
+        $res['text'] = $name . $res['comp'] . $compText;                                        // prepare the comparison
+        
+        $column = ColumnInfo::getDefault()->getItem($name);                                     // request the column info
+        if ($column)
+        {
+            $this->getAttachedColumnIds($column);                                               // more than 1 entry of attached table can be assigned
+            $query = $column->getSqlWhere($this->id) . $res['text'];                            // and embbed it into Sql
+            $this->updateQuery($column, $query);                                                // modify query for stricter test
+        }
+        
+        if ($this->clientSite && isset($query))
+        {
             $res['val'] = $this->clientSite->test($query);                                      // then perform the test and store result in the tree
+        }
     }
     
     /**
@@ -376,14 +398,16 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      * @param unknown $res
      * @param unknown $sub
      */
-    function getCompareResultBool(&$res, $sub)
+    private function getCompareResultBool(&$res, $sub)
     {
         $rule = $res["_matchrule"];
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
     
-        $query = ColumnInfo::getDefault()->GetSqlExists($res['name'], $this->id);               // prepare the query
+        $query = ColumnInfo::getDefault()->getSqlExists($res['name'], $this->id);               // prepare the query
         if ($this->clientSite)
+        {
             $res['val'] = $this->clientSite->test($query) === $sub['val'];                      // then perform the test and store result in the tree
+        }
     }    
 
     /**
@@ -391,7 +415,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      * @param unknown $res
      * @param unknown $sub
      */
-    function execSearch(&$res, $sub)                                                            // represents one of the saved searches
+    private function execSearch(&$res, $sub)                                                    // represents one of the saved searches
     {
         $search = $sub['puretext'];                                                             // name of the saved search
         if ($this->savedSearches != null && array_key_exists($search, $this->savedSearches))    // search is present in dictionary as in db
@@ -416,7 +440,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      * @param unknown $sub
      * @return unknown
      */
-    function getResult(&$res, $sub)                                                                    // Term is either one of the comparisons or a Search
+    private function getResult(&$res, $sub)                                                     // Term is either one of the comparisons or a Search
     {
         $rule = $res["_matchrule"];
         $subrule = $sub["_matchrule"];
@@ -424,6 +448,49 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
         
         return $sub['val'];
     }
-}
 
-// TODO: Parser komplettieren (search, callbacks zu db, bool vergleich etc.)
+    /**
+     * Determines the ids of an attached column/table assigned to a book with $id
+     * @param Column $column
+     */
+    private function getAttachedColumnIds($column)
+    {
+        if (!$column->isAttachedColumn() || $column->DataTable === 'comments')                          // column is not an attached column 
+        {
+            return;
+        }
+        
+        if (!$this->isCacheEmpty() && array_key_exists($column->DataTable, $this->attachedColumnIds))   // data for column already present
+        {
+            return;
+        }
+        
+        if ($this->clientSite)
+        {
+            $ids = $this->clientSite->getIds($column->getSqlExists($this->id));                         // query the ids of the attached table assigned to the book
+            if (count($ids) > 1)                                                                        // more than 1 id
+            {
+                $this->attachedColumnIds[$column->DataTable] = $ids;                                    // contribute to combinations                
+            }
+        }
+    }
+    
+    /**
+     * Updates given query for an attached column
+     * @param Column $column
+     * @param string $query
+     */
+    private function updateQuery($column, &$query)
+    {
+        if ($this->attachedColumnId &&
+            array_key_exists($column->DataTable, $this->attachedColumnId))
+        {
+            $id = $this->attachedColumnId[$column->DataTable];
+            if ($id > 0)
+            {
+                $colName = $column->getDataTableId();
+                $query .= " and $colName=$id";
+            }
+        }        
+    }
+}
