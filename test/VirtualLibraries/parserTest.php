@@ -65,6 +65,21 @@ namespace VirtualLibraries
        	}
        	
        	/**
+       	 * Helper tests usage of parenthesis
+       	 * @param string $truth
+       	 * @return NULL|Boolean
+       	 */
+       	private function parenthesisOp($truth)
+       	{
+       	    $parser = new VirtualLibrariesParser('(' . $truth . ')');
+       	    $res = $parser->match_Disjunction();
+       	    if ($res === FALSE)
+       	        return null;
+       	         
+       	        return $res['val'];
+       	}
+       	
+       	/**
        	 * Helper provides comparison string and returns Boolean test result
        	 * @param string $comparison
        	 * @return NULL|Boolean
@@ -112,6 +127,15 @@ namespace VirtualLibraries
         	parent::assertEquals(false, $this->binaryOp('and', 'false', 'true'), '\'false\' or \'true\' should return \'false\'');
         	parent::assertEquals(false, $this->binaryOp('and', 'true', 'false'), '\'true\' or \'false\' should return \'false\'');
         	parent::assertEquals(true, $this->binaryOp('and', 'true', 'true'), '\'true\' or \'true\' should return \'true\'');
+        }
+        
+        /**
+         * test of parenthesis
+         */
+        function testParenthesis()
+        {
+            parent::assertFalse($this->parenthesisOp('false'), '(false) should return false');
+            parent::assertTrue($this->parenthesisOp('true'), '(true) should return true');
         }
         
         /**

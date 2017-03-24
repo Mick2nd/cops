@@ -920,7 +920,7 @@ public function Term_STR (&$res, $sub)                                          
         $res['val'] = $this->getResult($res, $sub);    
     }
 
-/* Boolean: Bool | ( '(' Ws Disjunction Ws ')' ) | Term  */
+/* Boolean: getBool: Bool | ( .'(' Ws getDisjunction: Disjunction Ws .')' ) | getTerm: Term  */
 protected $match_Boolean_typestack = array('Boolean');
 function match_Boolean ($stack = array()) {
 	$matchrule = "Boolean"; $result = $this->construct($matchrule, $matchrule, null);
@@ -931,7 +931,7 @@ function match_Boolean ($stack = array()) {
 		$matcher = 'match_'.'Bool'; $key = $matcher; $pos = $this->pos;
 		$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
 		if ($subres !== FALSE) {
-			$this->store( $result, $subres );
+			$this->store( $result, $subres, "getBool" );
 			$_169 = TRUE; break;
 		}
 		$result = $res_156;
@@ -942,10 +942,7 @@ function match_Boolean ($stack = array()) {
 			$pos_158 = $this->pos;
 			$_164 = NULL;
 			do {
-				if (substr($this->string,$this->pos,1) == '(') {
-					$this->pos += 1;
-					$result["text"] .= '(';
-				}
+				if (substr($this->string,$this->pos,1) == '(') { $this->pos += 1; }
 				else { $_164 = FALSE; break; }
 				$matcher = 'match_'.'Ws'; $key = $matcher; $pos = $this->pos;
 				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
@@ -953,16 +950,15 @@ function match_Boolean ($stack = array()) {
 				else { $_164 = FALSE; break; }
 				$matcher = 'match_'.'Disjunction'; $key = $matcher; $pos = $this->pos;
 				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
-				if ($subres !== FALSE) { $this->store( $result, $subres ); }
+				if ($subres !== FALSE) {
+					$this->store( $result, $subres, "getDisjunction" );
+				}
 				else { $_164 = FALSE; break; }
 				$matcher = 'match_'.'Ws'; $key = $matcher; $pos = $this->pos;
 				$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
 				if ($subres !== FALSE) { $this->store( $result, $subres ); }
 				else { $_164 = FALSE; break; }
-				if (substr($this->string,$this->pos,1) == ')') {
-					$this->pos += 1;
-					$result["text"] .= ')';
-				}
+				if (substr($this->string,$this->pos,1) == ')') { $this->pos += 1; }
 				else { $_164 = FALSE; break; }
 				$_164 = TRUE; break;
 			}
@@ -973,7 +969,7 @@ function match_Boolean ($stack = array()) {
 			$matcher = 'match_'.'Term'; $key = $matcher; $pos = $this->pos;
 			$subres = ( $this->packhas( $key, $pos ) ? $this->packread( $key, $pos ) : $this->packwrite( $key, $pos, $this->$matcher(array_merge($stack, array($result))) ) );
 			if ($subres !== FALSE) {
-				$this->store( $result, $subres );
+				$this->store( $result, $subres, "getTerm" );
 				$_167 = TRUE; break;
 			}
 			$result = $res_158;
@@ -991,7 +987,17 @@ function match_Boolean ($stack = array()) {
 	if( $_169 === FALSE) { return FALSE; }
 }
 
-public function Boolean_STR (&$res, $sub)                                                               // The Boolean is either a Bool constant, a complex expression in parenthesis or a Term
+public function Boolean_getBool (&$res, $sub)                                                               // The Boolean is either a Bool constant,
+	{
+        $res['val'] = $this->getResult($res, $sub);    
+	}
+
+public function Boolean_getDisjunction (&$res, $sub)                                                        // a complex expression in parenthesis
+	{
+        $res['val'] = $this->getResult($res, $sub);    
+	}
+
+public function Boolean_getTerm (&$res, $sub)                                                               //   or a Term
 	{
         $res['val'] = $this->getResult($res, $sub);    
 	}
