@@ -262,8 +262,16 @@ Term: Search | DateComp | StringComp | ValueComp | BoolComp
         $res['val'] = $this->getResult($res, $sub);    
     }
 
-Boolean: Bool | ( '(' Ws Disjunction Ws ')' ) | Term 
-	function * (&$res, $sub)                                                               // The Boolean is either a Bool constant, a complex expression in parenthesis or a Term
+Boolean: getBool: Bool | ( .'(' Ws getDisjunction: Disjunction Ws .')' ) | getTerm: Term 
+	function getBool(&$res, $sub)                                                               // The Boolean is either a Bool constant,
+	{
+        $res['val'] = $this->getResult($res, $sub);    
+	}
+	function getDisjunction(&$res, $sub)                                                        // a complex expression in parenthesis
+	{
+        $res['val'] = $this->getResult($res, $sub);    
+	}
+	function getTerm(&$res, $sub)                                                               //   or a Term
 	{
         $res['val'] = $this->getResult($res, $sub);    
 	}
