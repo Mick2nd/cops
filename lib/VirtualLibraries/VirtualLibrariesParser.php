@@ -49,7 +49,7 @@ class VirtualLibrariesParser extends Parser\Basic
         {
             $this->resetIdCache();                                                                      // reset the cache for Attached Column Ids            
             $this->prepareParse($id);                                                                   // prepare for parsing
-            $res = match_Disjunction();                                                                 // invoke parser
+            $res = $this->match_Disjunction();                                                          // invoke parser
             
             if ($this->isCacheEmpty())                                                                  // in the parser no attached columns with more than one id were detected
             {
@@ -64,7 +64,7 @@ class VirtualLibrariesParser extends Parser\Basic
                     'identifiers' => array_shift($this->attachedColumnIdCombinations['identifiers']));                
                 
                 $this->prepareParse($id);                                                               // reset the parser
-                $res = match_Disjunction();                                                             // invoke parser
+                $res = $this->match_Disjunction();                                                      // invoke parser
                 if ($res['val'] === true)
                 {
                     return true;                                                                        // return a true result
