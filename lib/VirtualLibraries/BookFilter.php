@@ -132,7 +132,7 @@ namespace VirtualLibraries
         public function getSql(array $requiredColumns = array( "id", "title", "authors", "genre" ))
         {
             $ids = $this->getSelectedIds();
-            $SQL = ForeignColumns::getDefault()->getSqlAll($requiredColumns, $ids);
+            $SQL = ColumnInfo::getDefault()->getSqlAll($requiredColumns, $ids);
 
             return $SQL;
         }

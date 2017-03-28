@@ -27,7 +27,6 @@ namespace VirtualLibraries
             $this->addLinkedColumn("publisher", "name", "publishers", "publisher", "books_publishers_link");
             $this->addLinkedColumn("rating", "rating", "ratings", "rating", "books_ratings_link");
             $this->addLinkedColumn("tags", "name", "tags", "tag", "books_tags_link");
-            $this->addLinkedColumn("genre", "value", "custom_column_1", "value", "books_custom_column_1_link");
             
             $this->addAttachedColumn("comments", "text", "comments");
             $this->addAttachedColumn("format", "format", "data");
@@ -116,6 +115,25 @@ namespace VirtualLibraries
             foreach ($values as $key => $val)
             {
                 $this->addNativeColumn($key, $val);
+            }
+        }
+        
+        /**
+         * Sets the Custom Column info
+         * @param array $values
+         */
+        public function setCustomColumnInfo($values)
+        {
+            foreach ($values as $val)
+            {
+                $key = $val['label'];
+                $id = $val['id'];
+                $this->addLinkedColumn(
+                        $key, 
+                        "value", 
+                        "custom_column_$id", 
+                        "value", 
+                        "books_custom_column_{$id}_link");
             }
         }
             

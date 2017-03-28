@@ -57,6 +57,7 @@ namespace VirtualLibraries
                     'VirtualLibraries\DbProxy::concatFini', 2);
                 
                 ColumnInfo::getDefault()->setColumnInfo($this->getTypes("books"));                  // the Column Info singleton needs type info from books
+                ColumnInfo::getDefault()->setCustomColumnInfo($this->getCustomColumns());           // and from Custom Columns
 
                 return true;
             }
@@ -179,6 +180,16 @@ namespace VirtualLibraries
             }
             
             return $columns;
+        }
+        
+        /**
+         * Queries the Custom Column info and returns it.
+         * @return array|boolean
+         */
+        public function getCustomColumns()
+        {
+            $query = "select id, label, datatype from custom_columns";
+            return $this->executeQueryAll($query);
         }
         
         /**
