@@ -13,6 +13,6 @@ class PageAuthorDetail extends Page
         $author = Author::getAuthorById ($this->idGet);
         $this->idPage = $author->getEntryId ();
         $this->title = $author->name;
-        list ($this->entryArray, $this->totalNumber) = Book::getBooksByAuthor ($this->idGet, $this->n);
+        list ($this->entryArray, $this->totalNumber) = BookServices::getBooksByAuthorS ($this->idGet, $this->n);
     }
 }

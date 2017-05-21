@@ -27,9 +27,9 @@
     $type   = getURLParam('type', 'jpg');
     $idData = getURLParam('data', NULL);
     if (is_null($bookId)) {
-        $book = Book::getBookByDataId($idData);
+        $book = BookServices::getBookByDataIdS($idData);
     } else {
-        $book = Book::getBookById($bookId);
+        $book = BookServices::getBookByIdS($bookId);
     }
 
     if (!$book) {

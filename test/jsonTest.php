@@ -40,7 +40,7 @@ class JsonTest extends PHPUnit_Framework_TestCase
     }
 
     public function testGetBookContentArrayWithoutSeries () {
-        $book = Book::getBookById(17);
+        $book = BookServices::getBookByIdS(17);
         $test = JSONRenderer::getBookContentArray($book);
 
         $this->assertEquals ("", $test ["seriesName"]);
@@ -50,7 +50,7 @@ class JsonTest extends PHPUnit_Framework_TestCase
     }
 
     public function testGetBookContentArrayWithSeries () {
-        $book = Book::getBookById(2);
+        $book = BookServices::getBookByIdS(2);
 
         $test = JSONRenderer::getBookContentArray($book);
 
@@ -61,7 +61,7 @@ class JsonTest extends PHPUnit_Framework_TestCase
     }
 
     public function testGetFullBookContentArray () {
-        $book = Book::getBookById(17);
+        $book = BookServices::getBookByIdS(17);
 
         $test = JSONRenderer::getFullBookContentArray($book);
 

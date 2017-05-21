@@ -145,6 +145,103 @@ class BookServices
 	static private $default;
 	protected $log;
 
+	
+	public static function getEntryIdByLetterS ($startingLetter)
+	{
+		return self::getDefault()->getEntryIdByLetter($startingLetter);
+	}
+	
+	public static function getFilterStringS ()
+	{
+		return self::getDefault()->getFilterString();
+	}
+	
+	public static function getBookCountS($database = NULL)
+	{
+		return self::getDefault()->getBookCount($database);
+	}
+	
+	public static function getCountS()
+	{
+		return self::getDefault()->getCount();
+	}
+	
+	public static function getBooksByAuthorS($authorId, $n)
+	{
+		return self::getDefault()->getBooksByAuthor($authorId, $n);
+	}
+	
+	public static function getBooksByRatingS($ratingId, $n)
+	{
+		return self::getDefault()->getBooksByRating($ratingId, $n);
+	}
+	
+	public static function getBooksByPublisherS($publisherId, $n)
+	{
+		return self::getDefault()->getBooksByPublisher($publisherId, $n);
+	}
+	
+	public static function getBooksBySeriesS($serieId, $n)
+	{
+		return self::getDefault()->getBooksBySeries($serieId, $n);
+	}
+	
+	public static function getBooksByTagS($tagId, $n)
+	{
+		return self::getDefault()->getBooksByTag($tagId, $n);
+	}
+	
+	public static function getBooksByLanguageS($languageId, $n)
+	{
+		return self::getDefault()->getBooksByLanguage($languageId, $n);
+	}
+	
+	public static function getBooksByCustomS($customColumn, $id, $n)
+	{
+		return self::getDefault()->getBooksByCustom($customColumn, $id, $n);
+	}
+	
+	public static function getBookByIdS($bookId)
+	{
+		return self::getDefault()->getBookById($bookId);
+	}
+	
+	public static function getBookByDataIdS($dataId)
+	{
+		return self::getDefault()->getBookByDataId($dataId);
+	}
+	
+	public static function getBooksByQueryS($query, $n, $database = NULL, $numberPerPage = NULL)
+	{
+		return self::getDefault()->getBooksByQuery($query, $n, $database, $numberPerPage);
+	}
+	
+	public static function getBooksS($n)
+	{
+		return self::getDefault()->getBooks($n);
+	}
+	
+	public static function getAllBooksS()
+	{
+		return self::getDefault()->getAllBooks();
+	}
+	
+	public static function getBooksByStartingLetterS($letter, $n, $database = NULL, $numberPerPage = NULL)
+	{
+		return self::getDefault()->getBooksByStartingLetter($letter, $n, $database, $numberPerPage);
+	}
+	
+	public static function getEntryArrayS($query, $params, $n, $database = NULL, $numberPerPage = NULL)
+	{
+		return self::getDefault()->getEntryArray($query, $params, $n, $database, $numberPerPage);
+	}
+	
+	public static function getAllRecentBooksS()
+	{
+		return self::getDefault()->getAllRecentBooks();
+	}
+	
+	
 	/**
 	 * Error handler added to the php error handler
 	 * @param integer $errno
@@ -176,7 +273,9 @@ class BookServices
 
 		// php error handling
 		set_error_handler(array($this, 'errorHandler'), E_ALL);
-		trigger_error("Test trigger", E_USER_NOTICE);
+		
+		// caused an exception
+		// trigger_error("Test trigger", E_USER_NOTICE);
 	}
 
 	/**
@@ -309,9 +408,9 @@ class BookServices
 	public function getBookById($bookId)
 	{
 		$result = Base::getDb ()->prepare(
-				'select ' . self::BOOK_COLUMNS .
-				'\nfrom books ' . self::SQL_BOOKS_LEFT_JOIN .
-				'\nwhere books.id = ?');
+				'select ' . self::BOOK_COLUMNS . PHP_EOL .
+				'from books ' . self::SQL_BOOKS_LEFT_JOIN . PHP_EOL .
+				'where books.id = ?');
 
 		$result->execute (array ($bookId));
 		while ($post = $result->fetchObject ())
@@ -325,9 +424,9 @@ class BookServices
 	public function getBookByDataId($dataId)
 	{
 		$result = Base::getDb ()->prepare(
-				'select ' . self::BOOK_COLUMNS .
-				'\n, data.name, data.format \nfrom data, books ' . self::SQL_BOOKS_LEFT_JOIN .
-				'\nwhere data.book = books.id and data.id = ?');
+				'select ' . self::BOOK_COLUMNS . PHP_EOL .
+				', data.name, data.format from data, books ' . self::SQL_BOOKS_LEFT_JOIN . PHP_EOL .
+				'where data.book = books.id and data.id = ?');
 
 		$result->execute (array ($dataId));
 		while ($post = $result->fetchObject ())
@@ -384,7 +483,9 @@ class BookServices
 		/* @var $result PDOStatement */
 
 		list (, $result) = Base::executeQuery (
-				"select {0}\nfrom books\ngroup by substr (upper (sort), 1, 1)\norder by substr (upper (sort), 1, 1)",
+				"select {0}" . PHP_EOL . 
+				"from books" . PHP_EOL . 
+				"group by substr (upper (sort), 1, 1)\norder by substr (upper (sort), 1, 1)",
 				"substr (upper (sort), 1, 1) as title, count(*) as count",
 				$this->getFilterString(),
 				array (), -1);

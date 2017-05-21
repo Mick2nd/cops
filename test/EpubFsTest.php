@@ -20,7 +20,7 @@ class EpubFsTest extends PHPUnit_Framework_TestCase
     {
         $idData = 20;
         self::$add = "data=$idData&";
-        $myBook = Book::getBookByDataId($idData);
+        $myBook = BookServices::getBookByDataIdS($idData);
 
         self::$book = new EPub ($myBook->getFilePath ("EPUB", $idData));
         self::$book->initSpineComponent ();

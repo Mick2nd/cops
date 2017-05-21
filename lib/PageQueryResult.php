@@ -32,7 +32,7 @@ class PageQueryResult extends Page
         }
         switch ($scope) {
             case self::SCOPE_BOOK :
-                $array = Book::getBooksByStartingLetter ('%' . $queryNormedAndUp, $n, NULL, $numberPerPage);
+                $array = BookServices::getBooksByStartingLetterS ('%' . $queryNormedAndUp, $n, NULL, $numberPerPage);
                 break;
             case self::SCOPE_AUTHOR :
                 $array = Author::getAuthorsForSearch ('%' . $queryNormedAndUp);
@@ -47,7 +47,7 @@ class PageQueryResult extends Page
                 $array = Publisher::getAllPublishersByQuery ($queryNormedAndUp);
                 break;
             default:
-                $array = Book::getBooksByQuery (
+                $array = BookServices::getBooksByQueryS (
                     array ("all" => "%" . $queryNormedAndUp . "%"), $n);
         }
 
@@ -140,7 +140,7 @@ class PageQueryResult extends Page
             $i = 0;
             foreach (Base::getDbNameList () as $key) {
                 Base::clearDb ();
-                list ($array, $totalNumber) = Book::getBooksByQuery (array ("all" => $crit), 1, $i, 1);
+                list ($array, $totalNumber) = BookServices::getBooksByQueryS (array ("all" => $crit), 1, $i, 1);
                 array_push ($this->entryArray, new Entry ($key, DB . ":query:{$i}",
                                         str_format (localize ("bookword", $totalNumber), $totalNumber), "text",
                                         array ( new LinkNavigation ("?" . DB . "={$i}&page=9&query=" . $this->query)), "", $totalNumber));

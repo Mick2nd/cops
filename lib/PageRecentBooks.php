@@ -11,7 +11,7 @@ class PageRecentBooks extends Page
     public function InitializeContent ()
     {
         $this->title = localize ("recent.title");
-        $this->entryArray = Book::getAllRecentBooks ();
+        $this->entryArray = BookServices::getAllRecentBooksS ();
         $this->idPage = Book::ALL_RECENT_BOOKS_ID;
     }
 }

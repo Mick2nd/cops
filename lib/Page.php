@@ -98,7 +98,7 @@ class Page
         if (Base::noDatabaseSelected ()) {
             $i = 0;
             foreach (Base::getDbNameList () as $key) {
-                $nBooks = Book::getBookCount ($i);
+                $nBooks = BookServices::getBookCountS ($i);
                 array_push ($this->entryArray, new Entry ($key, "cops:{$i}:catalog",
                                         str_format (localize ("bookword", $nBooks), $nBooks), "text",
                                         array ( new LinkNavigation ("?" . DB . "={$i}")), "", $nBooks));
@@ -135,7 +135,7 @@ class Page
                     array_push ($this->entryArray, $customColumn->getCount());
                 }
             }
-            $this->entryArray = array_merge ($this->entryArray, Book::getCount());
+            $this->entryArray = array_merge ($this->entryArray, BookServices::getCountS());
 
             if (Base::isMultipleDatabaseEnabled ()) $this->title =  Base::getDbName ();
         }

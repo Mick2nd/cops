@@ -41,7 +41,7 @@ if ($error = checkRequest ($idData, $emailDest)) {
     exit;
 }
 
-$book = Book::getBookByDataId($idData);
+$book = BookServices::getBookByDataIdS($idData);
 $data = $book->getDataById ($idData);
 
 if (filesize ($data->getLocalPath ()) > 10 * 1024 * 1024) {

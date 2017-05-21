@@ -12,10 +12,10 @@ class PageAllBooks extends Page
     {
         $this->title = localize ("allbooks.title");
         if (getCurrentOption ("titles_split_first_letter") == 1) {
-            $this->entryArray = Book::getAllBooks();
+            $this->entryArray = BookServices::getAllBooksS();
         }
         else {
-            list ($this->entryArray, $this->totalNumber) = Book::getBooks ($this->n);
+            list ($this->entryArray, $this->totalNumber) = BookServices::getBooksS ($this->n);
         }
         $this->idPage = Book::ALL_BOOKS_ID;
     }

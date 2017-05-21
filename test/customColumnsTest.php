@@ -945,7 +945,7 @@ class CustomColumnTest extends PHPUnit_Framework_TestCase
         Base::clearDb();
 
 
-        $book = Book::getBookById(223);
+        $book = BookServices::getBookByIdS(223);
         $json = JSONRenderer::getBookContentArray($book);
 
         /* @var CustomColumn[] $custom */
@@ -1001,43 +1001,43 @@ class CustomColumnTest extends PHPUnit_Framework_TestCase
 
 
         list($query, $params) = CustomColumnType::createByLookup("custom_01")->getCustom("1")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_02")->getCustom("3")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_03")->getCustom("3")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_04")->getCustom("4")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_05")->getCustom("6")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_06")->getCustom("2016-04-24")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_07")->getCustom("11.0")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_08")->getCustom("-2")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_09")->getCustom("0")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_09")->getCustom("1")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_10")->getCustom("-1")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_10")->getCustom("0")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         list($query, $params) = CustomColumnType::createByLookup("custom_10")->getCustom("1")->getQuery();
-        Book::getEntryArray($query, $params, 1);
+        BookServices::getEntryArrayS($query, $params, 1);
 
         $_GET["custom"] = NULL;
         $config['cops_calibre_custom_column'] = array();

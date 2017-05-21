@@ -18,7 +18,7 @@ $add = 'data=' . $idData . '&';
 if (!is_null (GetUrlParam (DB))) {
     $add .= DB . '=' . GetUrlParam (DB) . '&';
 }
-$myBook = Book::getBookByDataId($idData);
+$myBook = BookServices::getBookByDataIdS($idData);
 
 $book = new EPub($myBook->getFilePath('EPUB', $idData));
 $book->initSpineComponent();
