@@ -30,6 +30,7 @@
             <fileset dir=".">
                 <include name="**" />
                 <exclude name="components/**" />
+                <exclude name="node_modules/**" />
                 <exclude name="test/**" />
                 <exclude name=".hg*/**" />
                 <exclude name=".git/**" />
@@ -51,8 +52,9 @@
                 <exclude name="*.xml" />
                 <exclude name=".travis.yml" />
                 <exclude name=".coveralls.yml" />
+                <exclude name=".scrutinizer.yml" />
                 <exclude name="config_local.php" />
-                <exclude name="composer.json" />
+                <exclude name="composer*" />
                 <exclude name="cops.sublime*" />
             </fileset>
         </zip>

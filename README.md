@@ -59,7 +59,10 @@ On Centos you may have to add :
 3.  Edit config_local.php to match your config.
 4.  If needed add other configuration item from config_default.php
 
-If you like Docker, you can also try [this project](https://github.com/linuxserver/docker-cops)
+If you like Docker, you can also try these docker containers.
+[x64](https://hub.docker.com/r/linuxserver/cops/)
+[armhf](https://hub.docker.com/r/lsioarmhf/cops)
+[arm64](https://hub.docker.com/r/lsioarmhf/cops-aarch64/)
 
 # Install from sources
 
@@ -93,6 +96,12 @@ Please see https://github.com/seblucas/cops/issues for open issues
 # Need help
 
 Please read https://github.com/seblucas/cops/wiki and check the FAQ.
+
+# Contributing
+
+As you could see [here](https://github.com/seblucas/cops/graphs/contributors), I appreciate every contributions and there were a lot over time. So don't be shy and submit your Pull Requests.
+
+I only have one limit (I may have more but that one is the worse) : COPS' goal is to provide an alternative to Calibre's content server and not to replace Calibre entirely. So I will refuse any PR making changes to the database content.
 
 # Credits
 
