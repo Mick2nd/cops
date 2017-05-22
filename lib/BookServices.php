@@ -75,12 +75,12 @@ define ('SQL_BOOKS_BY_FIRST_LETTER_DATA',
 		'where books.id in ({1}) order by books.sort');
 
 define ('SQL_BOOKS_BY_AUTHOR_DATA',
-		'select {0} from books_authors_link, books ' . SQL_BOOKS_LEFT_JOIN . '
+		'select distinct {0} from books_authors_link, books ' . SQL_BOOKS_LEFT_JOIN . '
      left outer join books_series_link on books_series_link.book = books.id
      where books_authors_link.book = books.id and books.id in ({1}) order by series desc, series_index asc, pubdate asc');
 
 define ('SQL_BOOKS_BY_SERIE_DATA',
-		'select {0} from books_series_link, books ' . SQL_BOOKS_LEFT_JOIN . '
+		'select distinct {0} from books_series_link, books ' . SQL_BOOKS_LEFT_JOIN . '
      where books_series_link.book = books.id and books.id in ({1}) order by series_index');
 
 define ('SQL_BOOKS_BY_TAG_DATA',
