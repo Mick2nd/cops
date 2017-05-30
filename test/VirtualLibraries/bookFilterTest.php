@@ -15,7 +15,12 @@ class bookFilterTest
 {
     static public function test($vlib)
     {
-        $filter = new BookFilter();
+    	$info = array(
+    			array('label' => 'genre', 'id' => 1)
+    	);
+    	ColumnInfo::getDefault()->setCustomColumnInfo($info);
+    	
+    	$filter = new BookFilter();
         if ($filter->prepareFilter($vlib))
         {
             $sql = $filter->getSql(array( "id", "title", "authors", "genre", "pubdate" ));

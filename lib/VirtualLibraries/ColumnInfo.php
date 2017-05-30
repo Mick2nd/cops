@@ -13,8 +13,9 @@ namespace VirtualLibraries
      */
     class ColumnInfo
     {
-        static private $default;
-        private $columns;
+    	use Singleton;
+
+    	private $columns;
     
         /**
          * Ctor.
@@ -98,11 +99,7 @@ namespace VirtualLibraries
          */
         static public function getDefault()
         {
-            if (ColumnInfo::$default === null)
-            {
-                ColumnInfo::$default = new ColumnInfo();
-            }
-            return ColumnInfo::$default;
+        	return self::getInstance();
         }
 
         /**
@@ -140,7 +137,7 @@ namespace VirtualLibraries
         /**
          * Indexer to access the individual Foreign Columns by name
          * @param string $key
-         * @return ForeignColumnComplex|NULL
+         * @return Column|NULL
          */
         public function getItem($key)
         {

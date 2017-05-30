@@ -18,8 +18,13 @@ class sqlTest
      */
     static public function test($table)
     {
+    	$info = array(
+    		array('label' => 'genre', 'id' => 1)	
+    	);
+    	ColumnInfo::getDefault()->setCustomColumnInfo($info);
+    	
         $ids = array(10, 11, 12, 13);
-        $sql = ForeignColumns::getDefault()->getItem($table)->getSqlForeignIds($ids);
+        $sql = ColumnInfo::getDefault()->getItem($table)->getSqlForeignIds($ids);
         
         $log = \Logger::getLogger(__CLASS__);
         $log->info("Printing Sql query for '$table' table:\n$sql");

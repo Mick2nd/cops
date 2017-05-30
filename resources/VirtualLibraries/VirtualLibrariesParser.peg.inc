@@ -36,6 +36,7 @@ class VirtualLibrariesParser extends Parser\Basic
         $this->savedFilters = array();
         
         $this->log = \Logger::getLogger(__CLASS__);
+        $this->log->info("Parsing string '$parse_string'");
     }
     
     /**
@@ -164,132 +165,266 @@ class VirtualLibrariesParser extends Parser\Basic
 
 /*!* VirtualLibraryParser
 
-Ws: ./[ \t]* /
+Ws: . /[ \t]* /
+	
+Name: getBuiltinName: (CommonName | DateName | SizeName) | getCustomName: CustomName
+	function getBuiltinName(&$res, $sub)
+	{
+		$res['custom'] = false ;
+		$res['text'] = $sub['text'] ;
+	}
+	function getCustomName(&$res, $sub)
+	{
+		$res['custom'] = true ;
+		$res['text'] = $sub['text'] ;
+	}
+
+CommonName: 'title' | 'author_sort' | 'authors' | 'author' | 'cover' | 'ondevice' | 'publisher' |
+	'rating' | 'series_index' | 'series_sort' | 'series' | 'tags' | 'comments' | 
+	'formats' | 'identifiers' | 'languages' | 'uuid'
+
+SizeName:  'size'
+
+DateName: 'timestamp' | 'last_modified' | 'pubdate'
+
+CustomName: .'#' /[a-zA-Z][a-zA-Z0-9]* / 
+
+Float: Integer ( '.' /[0-9]* / )? 
 
 Integer: /[0-9]+/
 
-Date: getDate: (Integer ( '-' Integer ( '-' Integer )? )?)
-    function getDate (&$res, $sub)
-    {
-		$res['text'] = "Date('" . $sub['text'] . "')" ;
-    } 
+Size: (getSizeInK: (Float .'k')) | (getSizeInM: (Float .'M')) | (getSize: Integer)
+	function getSize(&$res, $sub)
+	{
+		$res['text'] = $sub['text'] ;
+	
+	    $rule = $res["_matchrule"];
+	    Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+	}
+	function getSizeInK(&$res, $sub)
+	{
+		$res['text'] = strval(intval($sub['text'] * 1024)) ;			// to be tested
+	
+	    $rule = $res["_matchrule"];
+	    Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+	}
+	function getSizeInM(&$res, $sub)
+	{
+		$res['text'] = strval(intval($sub['text'] * 1024 * 1024)) ;		// to be tested
+	
+	    $rule = $res["_matchrule"];
+	    Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+	}
 
-Bool: getBool: ('true' | 'false')
+Date: getDate: (getSubdate: RelativeDate | getSubdate: AbsoluteDate)
+	function getSubdate(&$res, $sub)
+	{
+		$res['date'] = $sub['date'];
+		$res['accuracy'] = $sub['accuracy'];
+		$res['displacement'] = $sub['displacement'];
+	}
+	function getDate(&$res, $sub)
+	{
+		$date = $sub['date'];
+		$accuracy = $sub['accuracy'];
+		$displacement = $sub['displacement'];
+		 
+		$params = array("'$date'", "'$accuracy'");
+		if ($displacement !== null)
+		{
+			$params[2] = "'$displacement days'";
+		}
+		$params = implode(', ', $params);
+		
+		$res['text'] = "date($params)";
+		$res['accuracy'] = $sub['accuracy'];
+	
+	    $rule = $res["_matchrule"];
+	    Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($res, true) . "\n");
+	}
+
+AbsoluteDate: getDate: ((getYear: Integer) ( '-' (getMonth: Integer) ( '-' getDay: Integer )? )?)
+	function getYear(&$res, $sub)
+	{
+		$res['year'] = $sub['text'];
+		$res['month'] = '01'; 
+		$res['day'] = '01'; 
+		$res['accuracy'] = 'start of year';
+	}
+	function getMonth(&$res, $sub)
+	{
+		$res['month'] = $sub['text'];
+		$res['accuracy'] = 'start of month';
+	}
+	function getDay(&$res, $sub)
+	{
+		$res['day'] = $sub['text'];
+		$res['accuracy'] = 'start of day';
+	}
+	function getDate(&$res, $sub)
+	{
+		$year = $sub['year'];
+		$month = $sub['month'];
+		$day = $sub['day'];
+		
+		$res['date'] = "$year-$month-$day" ;
+		$res['accuracy'] = $sub['accuracy'];
+		$res['displacement'] = null;
+	
+	    $rule = $res["_matchrule"];
+	    Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($res, true) . "\n");
+	}
+
+RelativeDate: (getToday: 'today') | (getYesterday: 'yesterday') | (getDaysAgo: Integer Ws 'daysago') | (getThisMonth: 'thismonth')
+	function getToday(&$res, $sub)
+	{
+		$res['accuracy'] = 'start of day';
+		$res['displacement'] = null;
+		$res['date'] = 'now';
+	}
+	function getYesterday(&$res, $sub)
+	{
+		$res['accuracy'] = 'start of day';
+		$res['displacement'] = '-1';
+		$res['date'] = 'now';
+	}
+	function getDaysAgo(&$res, $sub)
+	{
+		$res['accuracy'] = 'start of day';
+		$res['displacement'] = '-' . $sub['text'];
+		$res['date'] = 'now';
+	}
+	function getThisMonth(&$res, $sub)
+	{
+		$res['accuracy'] = 'start of month';
+		$res['displacement'] = null;
+		$res['date'] = 'now';
+	}
+
+Bool: getBool: ('true' | 'false' | (.'"' ('true' | 'false') .'"'))
 	function getBool(&$res, $sub)
 	{
 		$res['val'] = $sub['text'] === 'true';
 	}
 
-Name: getCustomFlag: ('#'?) getName: (/[a-zA-Z][a-zA-Z0-9]* /)
-    function getCustomFlag(&$res, $sub)
-    {
-        $res['custom'] = ($sub['text'] === '#') ;
-    }
-    function getName(&$res, $sub)
-    {
-		$res['text'] = $sub['text'] ;
-    }
-
 String: .'"' getCompareOpString: ('=.' | '=' | '~' | '') getString: /[^"]* / .'"'
-    function getCompareOpString(&$res, $sub)
-    {
-        $this->getCompareOpString($res, $sub);
-    }
-    function getString(&$res, $sub)
-    {
-		$res['comptext'] = $sub['text'] . "'";
-		$res['puretext'] = $sub['text'];
-    }
+	function getCompareOpString(&$res, $sub)
+	{
+	    $this->getCompareOpString($res, $sub);
+	}
+	function getString(&$res, $sub)
+	{
+		$res['text'] = "'" . $res['anchor'] . $sub['text'] . "'";
+	}
+
+CompareOperator: ('<=' | '>=' | '<' | '>' | '=' | '')
     
 StringComp: getName: Name Ws .':' Ws getCompareResult: String
-    function getName(&$res, $sub)
-    {
-        $this->getName($res, $sub);
-    }
-    function getCompareResult(&$res, $sub)
-    {
-        $res['comp'] = $sub['comp'];    
-        $this->getCompareResult($res, $sub);
-    }
+	function getName(&$res, $sub)
+	{
+	    $this->getName($res, $sub);
+	}
+	function getCompareResult(&$res, $sub)
+	{
+	    $res['comp'] = $sub['comp'];    
+	    $this->getCompareResult($res, $sub);
+	}
     
-DateComp: getName: ('pubdate' | 'timestamp' | 'last_modified') Ws .':' Ws getCompareOp: ('<=' | '>=' | '<' | '>' | '=' | '') Ws getCompareResult: Date     
-    function getName(&$res, $sub)
-    {
-        $this->getName($res, $sub);
-    }
-    function getCompareOp(&$res, $sub)
-    {
-        $this->getCompareOp($res, $sub);
-    }
-    function getCompareResult(&$res, $sub)
-    {
-        $this->getCompareResult($res, $sub);
-    }
+DateComp: getName: DateName Ws .':' Ws getCompareOp: CompareOperator Ws getCompareResult: Date     
+	function getName(&$res, $sub)
+	{
+	    $this->getName($res, $sub);
+	}
+	function getCompareOp(&$res, $sub)
+	{
+	    $this->getCompareOp($res, $sub);
+	}
+	function getCompareResult(&$res, $sub)
+	{
+	    $name = $res['name'];
+	    $accuracy = $sub['accuracy'];
+	    $res['sqlname'] = "date('$name', '$accuracy')";
+	    $this->getCompareResult($res, $sub);
+	}
 
-ValueComp: getName: Name Ws .':' Ws getCompareOp: ('<=' | '>=' | '<' | '>' | '=' | '') Ws getCompareResult: Integer
-    function getName(&$res, $sub)
-    {
-        $this->getName($res, $sub);
-    }
-    function getCompareOp(&$res, $sub)
-    {
-        $this->getCompareOp($res, $sub);
-    }
-    function getCompareResult(&$res, $sub)
-    {
-        $this->getCompareResult($res, $sub);
-    }
+SizeComp: getName: SizeName Ws .':' Ws getCompareOp: CompareOperator Ws getCompareResult: Size
+	function getName(&$res, $sub)
+	{
+	    $this->getName($res, $sub);
+	}
+	function getCompareOp(&$res, $sub)
+	{
+	    $this->getCompareOp($res, $sub);
+	}
+	function getCompareResult(&$res, $sub)
+	{
+	    $this->getCompareResult($res, $sub);
+	}
+
+ValueComp: getName: Name Ws .':' Ws getCompareOp: CompareOperator Ws getCompareResult: Integer
+	function getName(&$res, $sub)
+	{
+	    $this->getName($res, $sub);
+	}
+	function getCompareOp(&$res, $sub)
+	{
+	    $this->getCompareOp($res, $sub);
+	}
+	function getCompareResult(&$res, $sub)
+	{
+	    $this->getCompareResult($res, $sub);
+	}
 
 BoolComp: getName: Name Ws .':' Ws getCompareResult: Bool
-    function getName(&$res, $sub)
-    {
-        $this->getName($res, $sub);
-    }
-    function getCompareResult(&$res, $sub)
-    {
-        $this->getCompareResultBool($res, $sub);    
-    }
+	function getName(&$res, $sub)
+	{
+	    $this->getName($res, $sub);
+	}
+	function getCompareResult(&$res, $sub)
+	{
+	    $this->getCompareResultBool($res, $sub);    
+	}
 
 Search: .'search:' Ws execSearch: String
-    function execSearch(&$res, $sub)                                                            // represents one of the saved searches
-    {
-        $this->execSearch($res, $sub);    
-    }
+	function execSearch(&$res, $sub)                                                            // represents one of the saved searches
+	{
+	    $this->execSearch($res, $sub);    
+	}
 
-Term: Search | DateComp | StringComp | ValueComp | BoolComp   
-    function * (&$res, $sub)                                                                    // Term is either one of the comparisons or a Search
-    {
-        $res['val'] = $this->getResult($res, $sub);    
-    }
+Term: Search | DateComp | StringComp | SizeComp | ValueComp | BoolComp   
+	function * (&$res, $sub)                                                                    // Term is either one of the comparisons or a Search
+	{
+	    $res['val'] = $this->getResult($res, $sub);    
+	}
 
 Boolean: getBool: Bool | ( .'(' Ws getDisjunction: Disjunction Ws .')' ) | getTerm: Term 
 	function getBool(&$res, $sub)                                                               // The Boolean is either a Bool constant,
 	{
-        $res['val'] = $this->getResult($res, $sub);    
+	    $res['val'] = $this->getResult($res, $sub);    
 	}
 	function getDisjunction(&$res, $sub)                                                        // a complex expression in parenthesis
 	{
-        $res['val'] = $this->getResult($res, $sub);    
+	    $res['val'] = $this->getResult($res, $sub);    
 	}
 	function getTerm(&$res, $sub)                                                               //   or a Term
 	{
-        $res['val'] = $this->getResult($res, $sub);    
+	    $res['val'] = $this->getResult($res, $sub);    
 	}
 
 Negation: notNegated: Boolean | ('not' Ws negated: Boolean)
 	function notNegated(&$res, $sub)
 	{
-        $res['val'] = $this->getResult($res, $sub);    
+	    $res['val'] = $this->getResult($res, $sub);    
 	}
 	function negated(&$res, $sub)
 	{
-        $res['val'] = !$this->getResult($res, $sub);    
+	    $res['val'] = !$this->getResult($res, $sub);    
 	}
 
 Conjunction: Operand1: Negation (Ws 'and' Ws Operand2: Negation)*
 	function Operand1(&$res, $sub)
 	{
-        $res['val'] = $this->getResult($res, $sub);    
+	    $res['val'] = $this->getResult($res, $sub);    
 	}
 	function Operand2(&$res, $sub)
 	{
@@ -299,7 +434,7 @@ Conjunction: Operand1: Negation (Ws 'and' Ws Operand2: Negation)*
 Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
 	function Operand1(&$res, $sub)
 	{
-        $res['val'] = $this->getResult($res, $sub);    
+	    $res['val'] = $this->getResult($res, $sub);    
 	}
 	function Operand2(&$res, $sub)
 	{
@@ -318,6 +453,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
         Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
         
         $res['name'] = $sub['text'];
+        $res['sqlname'] = $sub['text'];
     }
 
     /**
@@ -354,13 +490,16 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
         switch($sub['text'])
         {
             case '=':
-                $res['comp'] = "='" ;
+                $res['comp'] = "=" ;
+                $res['anchor'] = '';
                 break;
             case '=.':
-                $res['comp'] = " regexp '^" ;
+                $res['comp'] = " regexp " ;
+                $res['anchor'] = '^';
                 break;
             default:
-                $res['comp'] = " regexp '";
+                $res['comp'] = " regexp ";
+                $res['anchor'] = '';
                 break;
         }
     }
@@ -373,11 +512,11 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     private function getCompareResult(&$res, $sub)
     {
         $rule = $res["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
+        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true));
         
-        $compText = array_key_exists('comptext', $sub) ? $sub['comptext'] : $sub['text'];
+        $compText = $sub['text'];
         $name = $res['name'];
-        $res['text'] = $name . $res['comp'] . $compText;                                        // prepare the comparison
+        $res['text'] = $res['sqlname']. $res['comp'] . $compText;                               // prepare the comparison
         
         $column = ColumnInfo::getDefault()->getItem($name);                                     // request the column info
         if ($column)
@@ -386,11 +525,17 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
             $query = $column->getSqlWhere($this->id) . $res['text'];                            // and embbed it into Sql
             $this->updateQuery($column, $query);                                                // modify query for stricter test
         }
+        else 
+        {
+        	$res['val'] = "No column $name found";
+        }
         
         if ($this->clientSite && isset($query))
         {
             $res['val'] = $this->clientSite->test($query);                                      // then perform the test and store result in the tree
         }
+        
+		Diagnostic::diagnosticPrint("In $rule, result: " . var_export($res, true));
     }
     
     /**
