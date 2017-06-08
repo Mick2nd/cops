@@ -35,7 +35,10 @@ class OPDSRenderer
     public function __construct()
     {
     	if (is_null($this->virtualLibraries))
-    		$this->virtualLibraries = new VirtualLibraries($this);
+    	{
+    		$this->virtualLibraries = VirtualLibraries::getInstance();					// make a copy of the singleton reference
+    		$this->virtualLibraries->setRenderer($this);
+    	}
     }
 
     public function getOpenSearch () {

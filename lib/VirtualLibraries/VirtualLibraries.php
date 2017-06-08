@@ -16,6 +16,8 @@ namespace VirtualLibraries;
  */ 
 class VirtualLibraries 
 {
+	use Singleton;																// this must be a singleton
+	
 	const VIRTUAL_LIBRARIES = "virtual_libraries";
 	const USE_VIRTUAL_LIBRARIES = "cops_use_virtual_libraries";
 	const SAVED_SEARCHES = "saved_searches";
@@ -27,7 +29,16 @@ class VirtualLibraries
  	/**
  	 * Ctor.
  	 */
- 	public function  __construct($renderer)
+ 	private function  __construct()
+ 	{
+
+ 	}
+ 	
+ 	/**
+ 	 * Used to inject the opds renderer into this singleton instance
+ 	 * @param \OPDSRenderer $renderer
+ 	 */
+ 	public function setRenderer($renderer)
  	{
  		$this->renderer = $renderer;
  	}
@@ -43,24 +54,65 @@ class VirtualLibraries
  		if (is_null($config[self::USE_VIRTUAL_LIBRARIES]) || $config[self::USE_VIRTUAL_LIBRARIES] == "0")
  			return false;
  		
-        $urlFilter = getURLParam ("search", "");
+ 		$urlName = getURLParam ("search", $this->encodeName(localize("allbooks.title")));
  		foreach ($this->getVirtualLibraries() as $lib => $filter)
  		{
- 			$encodedFilter = bin2hex($filter);
- 			$phref = addURLParameter (getQueryString(), "search", $encodedFilter);
- 			$link = new \LinkFacet ("?" . $phref, $lib, localize ("tagword.title"), $encodedFilter == $urlFilter);	// TODO: replace tag name
+ 			$encodedName = $this->encodeName($lib);
+ 			$phref = addURLParameter (getQueryString(), "search", $encodedName);
+ 			$link = new \LinkFacet ("?" . $phref, $lib, localize ("virtuallib.title"), $encodedName == $urlName);
  			$this->renderer->renderLink ($link); 			
  		}
  		 	
  		return true;
 	}
 	
+	/**
+	 * Returns the VL definition string for a given name
+	 * @param string $name
+	 * @return mixed|string
+	 */
+	public function getFilter($name)
+	{
+		$name = $this->decodeName($name);
+		
+		if (array_key_exists($name, $this->getVirtualLibraries()))
+		{
+			return $this->getVirtualLibraries()[$name];
+		}
+		
+		return '';
+	}
+	
+	/**
+	 * Encapsulates the encoding strategy for the VL name
+	 * @param string $name
+	 * @return string
+	 */
+	private function encodeName($name)
+	{
+		return urlencode($name);
+	}
+	
+	/**
+	 * Encapsulates the decoding strategy for the VL name
+	 * @param string $encodedName
+	 * @return string
+	 */
+	private function decodeName($encodedName)
+	{
+		return urldecode($encodedName);
+	}
+	
+	/**
+	 * Reads the Virtual Libraries from the db, if not already done so
+	 * @return array
+	 */
 	private function getVirtualLibraries()
 	{
  		if (is_null($this->virtualLibraries))
  		{
  			$vlibs = json_decode(CalibrePreferences::getSetting(self::VIRTUAL_LIBRARIES), true, 2);
- 			$vlibs["Alle"] = "";
+ 			$vlibs[localize("allbooks.title")] = "";
  			
  			$this->virtualLibraries = $vlibs;
   		}
@@ -68,6 +120,10 @@ class VirtualLibraries
 		return $this->virtualLibraries;
 	}
 	
+	/**
+	 * Reads the Saved Searches from the db, if not already done so
+	 * @return array
+	 */
 	private function getSavedSearches()
 	{
 		if (is_null($this->savedSearches))

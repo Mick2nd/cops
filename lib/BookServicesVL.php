@@ -8,6 +8,7 @@
 
 use VirtualLibraries\BookFilter;
 use VirtualLibraries\DbProxy;
+use VirtualLibraries\VirtualLibraries;
 
 
 /**
@@ -224,7 +225,7 @@ class BookServicesVL extends BookServices
 		if (empty ($filter))
 			return '';
 
-			$filter = hex2bin($filter);                                         // get the virtual library back
+			$filter = VirtualLibraries::getInstance()->getFilter($filter);              	// get the virtual library back
 			$this->log->info("Request for faceted list: '$filter'");
 
 			return $filter;
