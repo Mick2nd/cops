@@ -81,6 +81,22 @@ namespace VirtualLibraries
         	parent::assertTrue(array_key_exists('textAll', $res), 'match_Expr3 should return a result \'textAll\'');
         	parent::assertTrue(array_key_exists('sub', $res), 'match_Expr3 should return a result \'sub\'');
         }
+        
+        /**
+         * Test the Redefine function
+         */
+        function testRedefine()
+        {
+        	$parser = new testParser('true');
+        	$res = $parser->match_Expr2();
+        	
+        	parent::assertSame(true, $res['val'], 'true is to be returned');
+        	
+        	$parser->redefine('false');
+        	$res = $parser->match_Expr2();
+        	
+        	parent::assertSame(false, $res['val'], 'false is to be returned');        	
+        }
     }
     
     /*

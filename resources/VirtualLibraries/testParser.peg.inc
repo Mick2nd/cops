@@ -38,6 +38,16 @@ class testParser extends Parser\Basic
         $this->depth = 0 ;
         $this->regexps = array() ;
     }
+    
+    /**
+     * Used to redefine the parser with a new expression
+     * @param string $expr
+     */
+    public function redefine($expr)
+    {
+    	$this->string = $expr;
+    	$this->rewind();
+    }
 
 /*!* testParser
 
