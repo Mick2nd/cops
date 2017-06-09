@@ -15,7 +15,7 @@ require_once 'config.php';
  * Tests a number of virtual libraries
  * Each library is tested against the number of entries it selects
  * @author jsoft
- *
+ * @group Selenium
  */
 class feedTest extends \PHPUnit_Extensions_Selenium2TestCase
 {
