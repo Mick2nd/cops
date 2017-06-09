@@ -47,7 +47,10 @@ If you want to use the OPDS feed don't forget to specify feed.php at the end of 
 3.  The path to a calibre library (metadata.db, format, & cover files).
 
 On any Debian based Linux you can use :
- aptitude install php5-gd php5-sqlite php5-json php5-intl
+ `apt-get install php5-gd php5-sqlite php5-json php5-intl`
+
+If you use Debian Stretch :
+ `apt-get install php7.0-gd php7.0-sqlite3 php7.0-json php7.0-intl php7.0-xml php7.0-mbstring php7.0-zip`
 
 On Centos you may have to add :
  yum install php-xml
@@ -100,6 +103,8 @@ Please read https://github.com/seblucas/cops/wiki and check the FAQ.
 # Contributing
 
 As you could see [here](https://github.com/seblucas/cops/graphs/contributors), I appreciate every contributions and there were a lot over time. So don't be shy and submit your Pull Requests.
+
+Note to translators : please prefer using [Transifex](https://github.com/seblucas/cops/wiki/Update-translations) instead of doing a PR.
 
 I only have one limit (I may have more but that one is the worse) : COPS' goal is to provide an alternative to Calibre's content server and not to replace Calibre entirely. So I will refuse any PR making changes to the database content.
 
