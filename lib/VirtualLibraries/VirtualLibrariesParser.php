@@ -12,42 +12,55 @@ use hafriedlander\Peg\Parser;
  */
 class VirtualLibrariesParser extends Parser\Basic 
 {
-    var $savedSearches;
-    var $clientSite;
-    var $id;
-    var $savedFilters;
-    var $attachedColumnIds;
-    var $attachedColumnIdCombinations;
-    var $attachedColumnId;
-    var $log;
+    private $savedSearches;
+    private $clientSite;
+    private $id;
+
+    private $attachedColumnIds;
+    private $attachedColumnIdCombinations;
+    private $attachedColumnId;
+    private $log;
+    
+    /**
+     * Allows us to invoke a child parser, if we need to evaluate a sub expression
+     * @var Lazy
+     */
+    private $childParser;
     
     /**
      * Ctor.
-     * @param string $parse_string
+     * @param string $expr
      * @param IClientSite $clientSite
      * @param array $savedSearches
      */
-    public function __construct($parse_string, IClientSite $clientSite = null, array $savedSearches = null)
+    public function __construct($expr, IClientSite $clientSite = null, array $savedSearches = null)
     {
-        parent::__construct($parse_string);
+        parent::__construct($expr);
         
         $this->savedSearches = $savedSearches;
         $this->clientSite = $clientSite;
-        $this->savedFilters = array();
         
         $this->log = \Logger::getLogger(__CLASS__);
-        $this->log->info("Parsing string '$parse_string'");
+        $this->log->info("Parsing string '$expr'");
+        
+        $this->childParser = new Lazy(array($this, 'cloneMe'));
     }
     
     /**
      * This function performs the real test, if the given $id passes the search expression
      * @param integer $id
+     * @param $expr string|null
      * @return boolean
      */
-    public function test($id)
+    public function test($id, $expr = null)
     {
         try
         {
+        	if ($expr !== null)																			// we allow a redefinition of the parse expression
+        	{
+        		$this->string = $expr;
+        	}
+        	
             $this->resetIdCache();                                                                      // reset the cache for Attached Column Ids            
             $this->prepareParse($id);                                                                   // prepare for parsing
             $res = $this->match_Disjunction();                                                          // invoke parser
@@ -80,7 +93,21 @@ class VirtualLibrariesParser extends Parser\Basic
         }
         
     }
-
+    
+    /**
+     * Creates a clone(child)
+     * @return \VirtualLibraries\VirtualLibrariesParser
+     */
+    public function cloneMe()
+    {
+    	$clone = new VirtualLibrariesParser(
+    			$this->string,															// with the same parse string
+    			$this->clientSite,														// with the same IClientSite
+    			$this->savedSearches);													// and saved searches
+    			
+    			return $clone;
+    }
+    
     /**
      * Use this function to
      * 1. reset the parse stream pointer
@@ -1294,6 +1321,7 @@ public function String_getCompareOpString (&$res, $sub)
 
 public function String_getString (&$res, $sub)
 	{
+		$res['puretext'] = $sub['text'];
 		$res['text'] = "'" . $res['anchor'] . $sub['text'] . "'";
 	}
 
@@ -2191,17 +2219,12 @@ public function Disjunction_Operand2 (&$res, $sub)
         $search = $sub['puretext'];                                                             // name of the saved search
         if ($this->savedSearches != null && array_key_exists($search, $this->savedSearches))    // search is present in dictionary as in db
         {
-            $query = $this->savedSearches[$search];
-            if (array_key_exists($search, $this->savedFilters))
-            {
-                $bookFilter = $this->savedFilters[$search];
-            }
-            else
-            {
-                $bookFilter = $this->clientSite->create($query);
-            }
-    
-            $res['val'] = $bookFilter->isSelected($this->id);
+        	$query = $this->savedSearches[$search];
+        	$res['val'] = $this->childParser->getValue()->test($this->id, $query);				// invoke the child parser to evaluate the search
+        }
+        else 
+        {
+        	$res['val'] = false;
         }
     }
     

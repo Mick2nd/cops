@@ -54,6 +54,7 @@ class feedTest extends \PHPUnit_Extensions_Selenium2TestCase
 		return array(
 				array('name' => 'Alle Bücher', 'noEntries' => 28),
 				array('name' => 'Beinhaltet Beschreibung', 'noEntries' => 19),
+				array('name' => 'Beinhaltet keine Beschreibung', 'noEntries' => 9),
 				array('name' => 'Beinhaltet keine Veröffentlichung', 'noEntries' => 21),
 				array('name' => 'Bestandteil von Serien', 'noEntries' => 20),
 				array('name' => 'Mathematik', 'noEntries' => 8),
