@@ -33,8 +33,8 @@ namespace VirtualLibraries
             $this->addAttachedColumn("format", "format", "data");
             $this->addAttachedColumn("size", "uncompressed_size", "data");
             $this->addAttachedColumn("name", "name", "data");
-            $this->addAttachedColumn("", "type", "identifiers");                        // TBD
-            $this->addAttachedColumn("", "value", "identifiers");                       // TBD
+            $this->addAttachedColumn("identifiersType", "type", "identifiers");                        	// TBD
+            $this->addAttachedColumn("identifiersValue", "val", "identifiers");                      	// TBD
         }
     
         /**

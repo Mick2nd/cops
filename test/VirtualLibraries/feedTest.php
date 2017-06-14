@@ -59,6 +59,11 @@ class feedTest extends \PHPUnit_Extensions_Selenium2TestCase
 				array('name' => 'Bestandteil von Serien', 'noEntries' => 20),
 				array('name' => 'Mathematik', 'noEntries' => 8),
 				array('name' => 'Matlab', 'noEntries' => 4),
+
+				array('name' => 'Identifiers 1', 'noEntries' => 5),
+				array('name' => 'Identifiers 2', 'noEntries' => 23),
+				array('name' => 'Identifiers 3', 'noEntries' => 24),
+				array('name' => 'Identifiers 4', 'noEntries' => 4),
 		);
 	}
 	

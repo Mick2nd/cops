@@ -486,7 +486,12 @@ namespace VirtualLibraries
         			array('test' => 'pubdate:=2007', 'expected' => true),
         			array('test' => 'last_modified:=2017', 'expected' => true),
         			
-        			array('test' => 'not size:<5.1M', 'expected' => false),        			
+        			array('test' => 'not size:<5.1M', 'expected' => false),
+        			
+        			array('test' => 'identifiers:true', 'expected' => true),
+        			array('test' => 'identifiers:false', 'expected' => false),
+        			array('test' => 'identifiers:google:false', 'expected' => false),
+        			array('test' => 'identifiers:isbn:97', 'expected' => true),
         	);
         }
         

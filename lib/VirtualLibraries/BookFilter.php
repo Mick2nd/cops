@@ -59,19 +59,6 @@ namespace VirtualLibraries
         }
 
         /**
-         * Creates a new instance of this class for recursive calls
-         * {@inheritDoc}
-         * @see \VirtualLibraries\IClientSite::create()
-         */
-        public function create($parseString)
-        {
-            $nested = new BookFilter();
-            $nested->prepareFilter($parseString, $this->dbProxy);
-            
-            return $nested;
-        }
-
-        /**
          * Test for a given book id
          * @param integer $id
          * @return bool

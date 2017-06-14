@@ -59,6 +59,7 @@ class VirtualLibrariesParser extends Parser\Basic
         	if ($expr !== null)																			// we allow a redefinition of the parse expression
         	{
         		$this->string = $expr;
+        		$this->log->info("Parsing string '$expr'");
         	}
         	
             $this->resetIdCache();                                                                      // reset the cache for Attached Column Ids            
@@ -193,8 +194,24 @@ class VirtualLibrariesParser extends Parser\Basic
 /*!* VirtualLibraryParser
 
 Ws: . /[ \t]* /
-	
-Name: getBuiltinName: (CommonName | DateName | SizeName) | getCustomName: CustomName
+
+NonDelim: /[^ \t:]* /
+
+NonQuote: /[^"]* /
+
+Name: getBuiltinName: (CommonName | DateName | SizeName | IdentifiersName) | getCustomName: CustomName
+	function getBuiltinName(&$res, $sub)
+	{
+		$res['custom'] = false ;
+		$res['text'] = $sub['text'] ;
+	}
+	function getCustomName(&$res, $sub)
+	{
+		$res['custom'] = true ;
+		$res['text'] = $sub['text'] ;
+	}
+
+GenericName: getBuiltinName: (CommonName | DateName | SizeName) | getCustomName: CustomName
 	function getBuiltinName(&$res, $sub)
 	{
 		$res['custom'] = false ;
@@ -208,11 +225,13 @@ Name: getBuiltinName: (CommonName | DateName | SizeName) | getCustomName: Custom
 
 CommonName: 'title' | 'author_sort' | 'authors' | 'author' | 'cover' | 'ondevice' | 'publisher' |
 	'rating' | 'series_index' | 'series_sort' | 'series' | 'tags' | 'comments' | 
-	'formats' | 'identifiers' | 'languages' | 'uuid'
+	'formats' | 'languages' | 'uuid' | 'identifiersType' | 'identifiersValue'
 
 SizeName:  'size'
 
 DateName: 'timestamp' | 'last_modified' | 'pubdate'
+
+IdentifiersName: 'identifiers'
 
 CustomName: .'#' /[a-zA-Z][a-zA-Z0-9]* / 
 
@@ -328,26 +347,37 @@ RelativeDate: (getToday: 'today') | (getYesterday: 'yesterday') | (getDaysAgo: I
 		$res['date'] = 'now';
 	}
 
-Bool: getBool: ('true' | 'false' | (.'"' ('true' | 'false') .'"'))
+Bool: (getBool: ('true' | 'false')) | (.'"' getBoolRe: Bool .'"')
 	function getBool(&$res, $sub)
 	{
+		$res['origtext'] = $sub['text']; 
 		$res['val'] = $sub['text'] === 'true';
 	}
+	function getBoolRe(&$res, $sub)
+	{
+		$res['origtext'] = $sub['origtext']; 
+		$res['val'] = $sub['val'];
+	}
 
-String: .'"' getCompareOpString: ('=.' | '=' | '~' | '') getString: /[^"]* / .'"'
+String: (. '"' getCompareOpString: CompareOperatorString getString: NonQuote . '"') | 
+	(getCompareOpString: CompareOperatorString getString: NonDelim Ws)
 	function getCompareOpString(&$res, $sub)
 	{
+		$res['origtext'] = $sub['text']; 
 	    $this->getCompareOpString($res, $sub);
 	}
 	function getString(&$res, $sub)
 	{
+		$res['origtext'] .= $sub['text'];
 		$res['puretext'] = $sub['text'];
 		$res['text'] = "'" . $res['anchor'] . $sub['text'] . "'";
 	}
 
+CompareOperatorString: ('=.' | '=' | '~' | '')
+
 CompareOperator: ('<=' | '>=' | '<' | '>' | '=' | '')
-    
-StringComp: getName: Name Ws .':' Ws getCompareResult: String
+
+StringComp: getName: GenericName Ws .':' Ws getCompareResult: String
 	function getName(&$res, $sub)
 	{
 	    $this->getName($res, $sub);
@@ -357,7 +387,7 @@ StringComp: getName: Name Ws .':' Ws getCompareResult: String
 	    $res['comp'] = $sub['comp'];    
 	    $this->getCompareResult($res, $sub);
 	}
-    
+
 DateComp: getName: DateName Ws .':' Ws getCompareOp: CompareOperator Ws getCompareResult: Date     
 	function getName(&$res, $sub)
 	{
@@ -389,7 +419,7 @@ SizeComp: getName: SizeName Ws .':' Ws getCompareOp: CompareOperator Ws getCompa
 	    $this->getCompareResult($res, $sub);
 	}
 
-ValueComp: getName: Name Ws .':' Ws getCompareOp: CompareOperator Ws getCompareResult: Integer
+ValueComp: getName: GenericName Ws .':' Ws getCompareOp: CompareOperator Ws getCompareResult: Integer
 	function getName(&$res, $sub)
 	{
 	    $this->getName($res, $sub);
@@ -403,7 +433,7 @@ ValueComp: getName: Name Ws .':' Ws getCompareOp: CompareOperator Ws getCompareR
 	    $this->getCompareResult($res, $sub);
 	}
 
-BoolComp: getName: Name Ws .':' Ws getCompareResult: Bool
+BoolComp: getName: GenericName Ws .':' Ws getCompareResult: Bool
 	function getName(&$res, $sub)
 	{
 	    $this->getName($res, $sub);
@@ -413,13 +443,55 @@ BoolComp: getName: Name Ws .':' Ws getCompareResult: Bool
 	    $this->getCompareResultBool($res, $sub);    
 	}
 
+IdentifiersDef: (.'"' getResult: IdentifiersDef .'"') | 
+	((getTypeDef: String) Ws .':' Ws (getBool: Bool)) | 
+	((getTypeDef: String) Ws .':' Ws (getValueDef: String))
+	function getTypeDef(&$res, $sub)
+	{
+		$res['type'] = 'identifiersType' . ':' . $sub['origtext'];
+        $this->diagnosticPrint($res, $sub);
+	}
+	function getBool(&$res, $sub)
+	{
+		$rule = $res['type'];
+		if (! $sub['val'])
+		{
+			$rule = 'not ' . $rule;
+		}
+		$res['val'] = $this->invokeChildParser($rule);
+        $this->diagnosticPrint($res, $sub);
+	}
+	function getValueDef(&$res, $sub)
+	{
+		$rule = 'identifiersValue' . ':"' . $sub['origtext'] . '"';
+		$rule .= ' and ';
+		$rule .= $res['type'];
+		$res['val'] = $this->invokeChildParser($rule);
+        $this->diagnosticPrint($res, $sub);
+	}
+	function getResult(&$res, $sub)
+	{
+		$res['val'] = $sub['val'];
+	}
+
+IdentifiersComp: IdentifiersName Ws .':' Ws (getBool: Bool | getResult: IdentifiersDef)
+	function getBool(&$res, $sub)
+	{
+		$rule = 'identifiersType' . ':' . $sub['origtext'];
+		$res['val'] = $this->invokeChildParser($rule);
+	}
+	function getResult(&$res, $sub)
+	{
+		$res['val'] = $sub['val'];
+	}
+
 Search: .'search:' Ws execSearch: String
 	function execSearch(&$res, $sub)                                                            // represents one of the saved searches
 	{
 	    $this->execSearch($res, $sub);    
 	}
 
-Term: Search | DateComp | StringComp | SizeComp | ValueComp | BoolComp   
+Term: Search | DateComp | SizeComp | IdentifiersComp | ValueComp | BoolComp | StringComp   
 	function * (&$res, $sub)                                                                    // Term is either one of the comparisons or a Search
 	{
 	    $res['val'] = $this->getResult($res, $sub);    
@@ -468,7 +540,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
 	{
 		$res['val'] = $res['val'] || $this->getResult($res, $sub);
 	}
-	
+
 */
     /**
      * Returns the Name from the Name rule
@@ -477,11 +549,10 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      */
     private function getName(&$res, $sub)
     {
-        $rule = $res["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
-        
         $res['name'] = $sub['text'];
         $res['sqlname'] = $sub['text'];
+    
+        $this->diagnosticPrint($res, $sub);
     }
 
     /**
@@ -491,9 +562,6 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      */
     private function getCompareOp(&$res, $sub)
     {
-        $rule = $res["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
-        
         switch($sub['text'])
         {
             case '':
@@ -503,6 +571,8 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
                 $res['comp'] = $sub['text'] ;
                 break;
         }
+    
+        $this->diagnosticPrint($res, $sub);
     }
     
     /**
@@ -512,9 +582,6 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      */
     private function getCompareOpString(&$res, $sub)
     {
-        $rule = $res["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true) . "\n");
-        
         switch($sub['text'])
         {
             case '=':
@@ -530,6 +597,8 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
                 $res['anchor'] = '';
                 break;
         }
+    
+        $this->diagnosticPrint($res, $sub);
     }
     
     /**
@@ -539,9 +608,6 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      */
     private function getCompareResult(&$res, $sub)
     {
-        $rule = $res["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub, true));
-        
         $compText = $sub['text'];
         $name = $res['name'];
         $res['text'] = $res['sqlname']. $res['comp'] . $compText;                               // prepare the comparison
@@ -563,7 +629,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
             $res['val'] = $this->clientSite->test($query);                                      // then perform the test and store result in the tree
         }
         
-		Diagnostic::diagnosticPrint("In $rule, result: " . var_export($res, true));
+        $this->diagnosticPrint($res, $sub);
     }
     
     /**
@@ -573,14 +639,13 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      */
     private function getCompareResultBool(&$res, $sub)
     {
-        $rule = $res["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, detected: " . var_export($sub['val'], true) . "\n");
-    
         $query = ColumnInfo::getDefault()->getSqlExists($res['name'], $this->id);               // prepare the query
         if ($this->clientSite)
         {
             $res['val'] = $this->clientSite->test($query) === $sub['val'];                      // then perform the test and store result in the tree
         }
+    
+        $this->diagnosticPrint($res, $sub);
     }    
 
     /**
@@ -603,6 +668,16 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
     }
     
     /**
+     * Invoke the child parser to evaluate some assembled replacement rule
+     * @param string $query
+     * @return bool
+     */
+    private function invokeChildParser($query)
+    {
+    	return $this->childParser->getValue()->test($this->id, $query);							// invoke te child parser to evaluate the replacement rule
+    }
+    
+    /**
      * Returns the result of a sub rule for several rules
      * @param unknown $res
      * @param unknown $sub
@@ -610,10 +685,7 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
      */
     private function getResult(&$res, $sub)                                                     // Term is either one of the comparisons or a Search
     {
-        $rule = $res["_matchrule"];
-        $subrule = $sub["_matchrule"];
-        Diagnostic::diagnosticPrint("In $rule, sub rule $subrule, detected: " . var_export($sub['val'], true));
-        
+        $this->diagnosticPrint($res, $sub);
         return $sub['val'];
     }
 
@@ -660,5 +732,22 @@ Disjunction: Operand1:Conjunction (Ws 'or' Ws Operand2:Conjunction)*
                 $query .= " and $colName=$id";
             }
         }        
+    }
+    
+    /**
+     * Performs a diagnostic print
+     * @param unknown $res
+     * @param unknown $sub
+     */
+    private function diagnosticPrint($res, $sub)
+    {
+    	$rule = $res["_matchrule"];
+    	$subrule = $sub["_matchrule"];
+    	
+    	Diagnostic::diagnosticPrint(
+    			"In $rule, sub rule $subrule, detected: " . 
+    			var_export($sub, true) . 
+    			", result: " . 
+    			var_export($res, true));    	
     }
 }
