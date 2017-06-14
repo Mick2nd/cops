@@ -1,3 +1,23 @@
+# Why this fork ?
+
+A few months ago I discovered COPS. I searched in the Internet to find a server/application which
+does exactly this: delivering of my personal library of ebooks.
+
+But one wish remained open: COPS did not support virtual libraries until this time. So I decided to
+contribute to COPS and created a first implementation of virtual libraries. 
+
+This implementation has the following features and limitations:
+ * Virtual Libraries will be available through the OPDS catalogue's facets.
+ * These facets are available only with certain ebook readers and they are available only at the level of 
+   book lists at the time of this writing.
+ * They make use of the configurated Virtual Libraries in the Calibre database. If one has configured such
+   libraries - they should be available as facets in COPS' OPDS catalogue.
+ * You are one configuration setting apart from these libraries: they must be activated through the configuration 
+   file setting 'cops_use_virtual_libraries'
+   
+The rest remains the same. Compatibility with the original implementation was a goal and hopefully it 
+can be integrated into the main fork of COPS.
+
 # COPS
 
 COPS stands for Calibre OPDS (and HTML) Php Server.
